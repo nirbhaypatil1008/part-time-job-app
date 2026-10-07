@@ -93,32 +93,9 @@ app.post('/api/auth/register/start', async (req, res, next) => {
     if (!result.success) return fail(res, result.status || 500, result.message);
     ok(res, {
       registrationToken: result.registrationToken,
-      maskedPhone: result.maskedPhone,
       maskedEmail: result.maskedEmail,
       currentStep: result.currentStep
     }, result.message);
-  } catch (e) { next(e); }
-});
-
-app.post('/api/auth/register/phone/send', async (req, res, next) => {
-  try {
-    const token = req.body.registrationToken || req.body.token;
-    if (!token) return fail(res, 400, 'Registration token is required');
-    const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
-    const result = await regService.sendPhoneVerification(token, clientIp);
-    if (!result.success) return fail(res, result.status || 500, result.message);
-    ok(res, { maskedPhone: result.maskedPhone, expiresIn: result.expiresIn, devOtp: result.devOtp }, result.message);
-  } catch (e) { next(e); }
-});
-
-app.post('/api/auth/register/phone/verify', async (req, res, next) => {
-  try {
-    const token = req.body.registrationToken || req.body.token;
-    const otp = req.body.otp;
-    if (!token) return fail(res, 400, 'Registration token is required');
-    const result = await regService.verifyPhoneOtp(token, otp);
-    if (!result.success) return fail(res, result.status || 500, result.message);
-    ok(res, { maskedEmail: result.maskedEmail }, result.message);
   } catch (e) { next(e); }
 });
 
@@ -126,10 +103,9 @@ app.post('/api/auth/register/email/send', async (req, res, next) => {
   try {
     const token = req.body.registrationToken || req.body.token;
     if (!token) return fail(res, 400, 'Registration token is required');
-    const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
-    const result = await regService.sendEmailVerification(token, clientIp);
+    const result = await regService.sendEmailVerification(token);
     if (!result.success) return fail(res, result.status || 500, result.message);
-    ok(res, { maskedEmail: result.maskedEmail, expiresIn: result.expiresIn, devOtp: result.devOtp }, result.message);
+    ok(res, { maskedEmail: result.maskedEmail, expiresIn: result.expiresIn }, result.message);
   } catch (e) { next(e); }
 });
 
@@ -165,25 +141,13 @@ app.post('/api/auth/register/status', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-app.post('/api/auth/register/resend-phone', async (req, res, next) => {
-  try {
-    const token = req.body.registrationToken || req.body.token;
-    if (!token) return fail(res, 400, 'Registration token is required');
-    const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
-    const result = await regService.resendPhoneOtp(token, clientIp);
-    if (!result.success) return fail(res, result.status || 500, result.message);
-    ok(res, { maskedPhone: result.maskedPhone, expiresIn: result.expiresIn, devOtp: result.devOtp }, result.message);
-  } catch (e) { next(e); }
-});
-
 app.post('/api/auth/register/resend-email', async (req, res, next) => {
   try {
     const token = req.body.registrationToken || req.body.token;
     if (!token) return fail(res, 400, 'Registration token is required');
-    const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
-    const result = await regService.resendEmailOtp(token, clientIp);
+    const result = await regService.resendEmailOtp(token);
     if (!result.success) return fail(res, result.status || 500, result.message);
-    ok(res, { maskedEmail: result.maskedEmail, expiresIn: result.expiresIn, devOtp: result.devOtp }, result.message);
+    ok(res, { maskedEmail: result.maskedEmail, expiresIn: result.expiresIn }, result.message);
   } catch (e) { next(e); }
 });
 
@@ -286,12 +250,6 @@ app.post('/api/auth/login', async (req, res, next) => {
         email: u.email, purpose: {$in: ['registration', 'email_registration']}, is_verified: true, is_used: true
       }, {projection: {_id: 1}});
       if (!otpVerified) return fail(res, 403, 'Email verification is required. Please verify your email to continue.');
-      // Also check phone verification for users registered via the new flow
-      const phoneVerified = await collection('otp_verifications').findOne({
-        email: u.email, purpose: 'phone_registration', is_verified: true, is_used: true
-      }, {projection: {_id: 1}});
-      // For legacy users (no phone_registration OTP), allow login; only block if phone_registration purpose was started
-      // This ensures backward compatibility with existing accounts
     }
     let extra = {};
     if (u.role === 'ROLE_STUDENT') {

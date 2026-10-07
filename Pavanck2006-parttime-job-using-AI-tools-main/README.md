@@ -20,7 +20,7 @@ A production-grade full-stack job marketplace connecting college students with c
 - **In-App Notifications** — Real-time alerts for application status changes, payment updates, and system events
 - **Complaint Chat** — Dedicated messaging thread between complainant and target user per dispute
 - **Audit Logging** — Full trail of all critical platform actions
-- **Email OTP Verification** — 6-digit code sent via SMTP during registration and password reset
+- **Email OTP Verification** — 6-digit code sent via SMTP during registration and password reset; registration does not require phone OTP
 
 ### Admin Dashboard
 - Platform-wide metrics (total users, jobs, open disputes, active listings)
@@ -100,7 +100,7 @@ MONGODB_URI=mongodb://127.0.0.1:27017/parttimejob_db?replicaSet=rs0
 JWT_SECRET=some-random-secret-string
 PORT=8080
 
-# Email OTP (optional — required for registration)
+# Email OTP (required for registration and password reset)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=you@gmail.com
@@ -108,7 +108,7 @@ SMTP_PASSWORD=your_app_password
 SMTP_FROM="PartTime Job <you@gmail.com>"
 ```
 
-> If SMTP is not configured, the OTP step will return a 503 error. For local testing, use the pre-seeded accounts below.
+> Email OTP codes are sent only to the address being verified; they are never returned by the API or printed to the server console. If SMTP is not configured, the OTP step returns a 503 error. For local testing, use the pre-seeded accounts below.
 
 ### 3. Start MongoDB locally
 

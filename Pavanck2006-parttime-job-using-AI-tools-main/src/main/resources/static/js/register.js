@@ -6,9 +6,7 @@
 const RegWizard = {
   _role: null,
   _token: null,
-  _phoneTimer: null,
   _emailTimer: null,
-  _phoneCooldown: 0,
   _emailCooldown: 0,
 
   // ─── Step Navigation ─────────────────────────────────────────────────────
@@ -18,7 +16,7 @@ const RegWizard = {
     document.getElementById('step' + step)?.classList.add('active');
 
     // Update progress dots
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       const dot = document.getElementById('dot' + i);
       const line = document.getElementById('line' + (i - 1));
       dot.classList.remove('active', 'done');
@@ -111,11 +109,10 @@ const RegWizard = {
       if (!res.ok) throw new Error(data.message || `Registration failed (error ${res.status})`);
 
       this._token = data.data.registrationToken;
-      document.getElementById('phoneDisplay').textContent = data.data.maskedPhone;
+      document.getElementById('emailDisplay').textContent = data.data.maskedEmail;
 
-      // Auto-send phone OTP
       this.goToStep(3);
-      await this._sendPhoneOtp();
+      await this._sendEmailOtp();
     } catch (err) {
       showToast(err.message || 'Registration failed', 'danger');
     } finally {
@@ -125,122 +122,7 @@ const RegWizard = {
     return false;
   },
 
-  // ─── Step 3: Phone OTP ─────────────────────────────────────────────────
-
-  async _sendPhoneOtp() {
-    try {
-      let res;
-      try {
-        res = await fetch('/api/auth/register/phone/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ registrationToken: this._token })
-        });
-      } catch (networkErr) {
-        throw new Error('Cannot reach the server. Check your internet connection and try again.');
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || `Failed to send code (error ${res.status})`);
-
-      document.getElementById('phoneDisplay').textContent = data.data?.maskedPhone || '';
-      this._startPhoneCooldown(data.data?.expiresIn || 300);
-
-      const devNotice = document.getElementById('phoneDevNotice');
-      if (data.data?.devOtp && devNotice) {
-        devNotice.className = 'alert alert-info py-2 small mb-3 text-start';
-        devNotice.innerHTML = `<i class="bi bi-info-circle-fill me-1"></i><strong>Dev Mode:</strong> No SMS gateway configured. Code sent to email or enter: <strong class="fs-6 text-primary user-select-all">${data.data.devOtp}</strong>`;
-        showToast(`Verification code: ${data.data.devOtp}`, 'info');
-      } else {
-        if (devNotice) devNotice.className = 'd-none';
-        showToast('Verification code sent to your phone', 'success');
-      }
-    } catch (err) {
-      showToast(err.message || 'Failed to send verification code. Please try again.', 'danger');
-    }
-  },
-
-  _startPhoneCooldown(seconds = 60) {
-    this._phoneCooldown = seconds;
-    const timerEl = document.getElementById('phoneResendTimer');
-    const resendBtn = document.getElementById('phoneResendBtn');
-    timerEl.style.display = 'block';
-    resendBtn.style.display = 'none';
-
-    clearInterval(this._phoneTimer);
-    this._phoneTimer = setInterval(() => {
-      this._phoneCooldown--;
-      if (this._phoneCooldown <= 0) {
-        clearInterval(this._phoneTimer);
-        timerEl.style.display = 'none';
-        resendBtn.style.display = 'block';
-      } else {
-        timerEl.innerHTML = `Resend code in <strong>${this._phoneCooldown}s</strong>`;
-      }
-    }, 1000);
-  },
-
-  async resendPhone() {
-    document.getElementById('phoneResendBtn').style.display = 'none';
-    clearOtpInputs('phoneOtpGroup');
-    try {
-      const res = await fetch('/api/auth/register/resend-phone', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ registrationToken: this._token })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to resend');
-      this._startPhoneCooldown(data.data?.expiresIn || 300);
-
-      const devNotice = document.getElementById('phoneDevNotice');
-      if (data.data?.devOtp && devNotice) {
-        devNotice.className = 'alert alert-info py-2 small mb-3 text-start';
-        devNotice.innerHTML = `<i class="bi bi-info-circle-fill me-1"></i><strong>Dev Mode:</strong> No SMS gateway configured. Code sent to email or enter: <strong class="fs-6 text-primary user-select-all">${data.data.devOtp}</strong>`;
-        showToast(`New code: ${data.data.devOtp}`, 'info');
-      } else {
-        showToast('New verification code sent', 'success');
-      }
-    } catch (err) {
-      showToast(err.message || 'Failed to resend code', 'danger');
-    }
-  },
-
-  async verifyPhone() {
-    const otp = getOtpValue('phoneOtpGroup');
-    if (otp.length !== 6) { showToast('Enter the complete 6-digit code', 'warning'); return; }
-
-    const btn = document.getElementById('phoneVerifyBtn');
-    try {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
-
-      const res = await fetch('/api/auth/register/phone/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ registrationToken: this._token, otp })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Verification failed');
-
-      clearInterval(this._phoneTimer);
-      showToast('Phone number verified!', 'success');
-
-      // Move to email verification
-      setTimeout(() => {
-        document.getElementById('emailDisplay').textContent = data.data?.maskedEmail || '';
-        this.goToStep(4);
-        this._sendEmailOtp();
-      }, 800);
-    } catch (err) {
-      showToast(err.message || 'Verification failed', 'danger');
-      clearOtpInputs('phoneOtpGroup');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-shield-check me-2"></i>Verify Phone';
-    }
-  },
-
-  // ─── Step 4: Email OTP ─────────────────────────────────────────────────
+  // ─── Step 3: Email OTP ─────────────────────────────────────────────────
 
   async _sendEmailOtp() {
     try {
@@ -254,16 +136,7 @@ const RegWizard = {
 
       document.getElementById('emailDisplay').textContent = data.data?.maskedEmail || '';
       this._startEmailCooldown(data.data?.expiresIn || 300);
-
-      const devNotice = document.getElementById('emailDevNotice');
-      if (data.data?.devOtp && devNotice) {
-        devNotice.className = 'alert alert-info py-2 small mb-3 text-start';
-        devNotice.innerHTML = `<i class="bi bi-info-circle-fill me-1"></i><strong>Dev Mode:</strong> Code sent to email or enter: <strong class="fs-6 text-primary user-select-all">${data.data.devOtp}</strong>`;
-        showToast(`Verification code: ${data.data.devOtp}`, 'info');
-      } else {
-        if (devNotice) devNotice.className = 'd-none';
-        showToast('Verification code sent to your email', 'success');
-      }
+      showToast('Verification code sent to your email', 'success');
     } catch (err) {
       showToast(err.message || 'Failed to send verification email', 'danger');
     }
@@ -330,7 +203,7 @@ const RegWizard = {
       setTimeout(() => {
         document.getElementById('regSuccessPending').style.display = 'block';
         document.getElementById('regSuccessDone').style.display = 'none';
-        this.goToStep(5);
+        this.goToStep(4);
       }, 800);
     } catch (err) {
       showToast(err.message || 'Verification failed', 'danger');
@@ -341,7 +214,7 @@ const RegWizard = {
     }
   },
 
-  // ─── Step 5: Complete Registration ─────────────────────────────────────
+  // ─── Step 4: Complete Registration ─────────────────────────────────────
 
   async completeRegistration() {
     const btn = document.getElementById('regCompleteBtn');

@@ -1,11 +1,8 @@
 /**
  * PARTTIME JOB PLATFORM — MULTI-STEP REGISTRATION SERVICE
  *
- * Steps: Account Type → Personal Info → Phone OTP → Email OTP → Account Created
- *
- * Uses pending_registrations table to hold state server-side.
- * OTP purposes: phone_registration, email_registration
- * Phone OTP: sent via SMS provider if configured, otherwise via email as dev fallback.
+ * Steps: Account Type → Personal Info → Email OTP → Account Created
+ * Pending registration data is stored server-side until email verification.
  */
 
 const crypto = require('crypto');
@@ -16,31 +13,12 @@ const otpService = require('./otp');
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const REGISTRATION_EXPIRY_HOURS = 24; // pending registration expires after 24h
-const PHONE_PURPOSE = 'phone_registration';
 const EMAIL_PURPOSE = 'email_registration';
-
-// Phone OTP send throttling (in-memory per process, mirrors otp.js approach)
-const PHONE_RESEND_COOLDOWN_MS = Number(process.env.PHONE_RESEND_COOLDOWN_SECONDS || 60) * 1000;
-const PHONE_RATE_WINDOW_MS = 15 * 60 * 1000;
-const PHONE_MAX_PER_SESSION = 5;   // code sends per registration session per window
-const PHONE_MAX_PER_IP = 20;       // code sends per client IP per window (anti-flooding)
-const phoneSendLog = new Map();    // registrationToken → [timestamps]
-const phoneIpLog = new Map();      // clientIp → [timestamps]
-setInterval(() => {
-  const cutoff = Date.now() - PHONE_RATE_WINDOW_MS;
-  for (const [k, v] of phoneSendLog) { const f = v.filter(t => t > cutoff); f.length ? phoneSendLog.set(k, f) : phoneSendLog.delete(k); }
-  for (const [k, v] of phoneIpLog) { const f = v.filter(t => t > cutoff); f.length ? phoneIpLog.set(k, f) : phoneIpLog.delete(k); }
-}, 5 * 60 * 1000).unref();
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function generateRegToken() {
   return crypto.randomBytes(32).toString('hex');
-}
-
-function maskPhone(phone) {
-  if (!phone || phone.length < 4) return '****';
-  return '*'.repeat(phone.length - 4) + phone.slice(-4);
 }
 
 function maskEmail(email) {
@@ -60,7 +38,7 @@ function parseExpiresAt(dateVal) {
 }
 
 /**
- * Normalize a phone number to E.164 for the SMS provider.
+ * Normalize a phone number to E.164 for consistent account contact details.
  * Indian inputs all become +91XXXXXXXXXX:
  *   9876543210 / 0 98765 43210 / 91 9876543210 / +91 98765 43210
  * Other already-international numbers just get a leading '+'. Numbers that
@@ -75,115 +53,6 @@ function normalizeIndianPhone(raw) {
   else if (/^\d{10}$/.test(p)) p = '+91' + p;                 // bare 10-digit mobile
   else if (!p.startsWith('+') && /^\d{8,15}$/.test(p)) p = '+' + p; // other country
   return p;
-}
-
-// ─── Phone OTP Sending ──────────────────────────────────────────────────────
-
-/**
- * Send phone OTP. Uses SMS provider if configured (SMS_PROVIDER env),
- * otherwise falls back to email delivery for development.
- */
-async function sendPhoneOtp(phone, code, senderName) {
-  // Try SMS provider first if valid credentials are present
-  const hasTwilioPlaceholder = (process.env.TWILIO_PHONE_NUMBER || '').includes('your_twilio') || 
-                               (process.env.TWILIO_ACCOUNT_SID || '').includes('your_');
-  let smsSent = false;
-
-  if (process.env.SMS_PROVIDER && !hasTwilioPlaceholder) {
-    const SmsProvider = getSmsProvider();
-    if (SmsProvider) {
-      const to = normalizeIndianPhone(phone);
-      try {
-        await SmsProvider.send(to, `Your ${senderName} verification code is: ${code}. It expires in 5 minutes. Do not share this code.`);
-        console.log(`[REGISTRATION] SMS sent successfully via ${process.env.SMS_PROVIDER} to ${to}`);
-        return { deliveredViaSms: true };
-      } catch (e) {
-        console.error(`[REGISTRATION] SMS provider (${process.env.SMS_PROVIDER}) failed:`, e.message);
-        console.log('[REGISTRATION] Falling back to email/dev delivery for phone OTP...');
-      }
-    }
-  } else if (process.env.SMS_PROVIDER) {
-    console.warn('[REGISTRATION] SMS_PROVIDER is set, but TWILIO credentials contain placeholder values. Using email/dev fallback.');
-  }
-
-  // Fallback: send phone OTP via email
-  try {
-    const nodemailer = require('nodemailer');
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
-    });
-
-    const to = process.env.DEV_PHONE_OTP_EMAIL || process.env.SMTP_FROM;
-    if (to) {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to,
-        subject: `📱 Phone OTP: ${code}`,
-        html: `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:480px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-    <div style="background:linear-gradient(135deg,#0d9488,#0891b2);padding:32px 24px;text-align:center;">
-      <div style="font-size:28px;margin-bottom:8px;">📱</div>
-      <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700;">Phone Verification</h1>
-    </div>
-    <div style="padding:32px 24px;">
-      <p style="color:#334155;font-size:15px;margin:0 0 16px;">Your phone verification code for <strong>${senderName}</strong>:</p>
-      <div style="background:#f0fdfa;border:2px dashed #99f6e4;border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
-        <div style="font-size:36px;font-weight:800;letter-spacing:12px;color:#0d9488;font-family:monospace;">${code}</div>
-      </div>
-      <p style="color:#64748b;font-size:13px;margin:0 0 8px;">⏱ Expires in <strong>5 minutes</strong></p>
-      <p style="color:#64748b;font-size:13px;margin:0;">🔒 Do not share this code.</p>
-    </div>
-  </div>
-</body></html>`
-      });
-      console.log(`[REGISTRATION] Phone OTP sent to email fallback (${to})`);
-    }
-  } catch (emailErr) {
-    console.error('[REGISTRATION] Email fallback send failed:', emailErr.message);
-  }
-
-  return { deliveredViaSms: false };
-}
-
-function getSmsProvider() {
-  const provider = (process.env.SMS_PROVIDER || '').toLowerCase();
-  if (provider === 'twilio') {
-    // Twilio integration placeholder — requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
-    return {
-      async send(to, body) {
-        const accountSid = process.env.TWILIO_ACCOUNT_SID;
-        const authToken = process.env.TWILIO_AUTH_TOKEN;
-        const from = process.env.TWILIO_PHONE_NUMBER;
-        if (!accountSid || !authToken || !from) {
-          throw Object.assign(
-            new Error('Twilio credentials not configured — set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_PHONE_NUMBER'),
-            { code: 'OTP_SMS_NOT_CONFIGURED' }
-          );
-        }
-        const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-        const creds = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Authorization': `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ To: to, From: from, Body: body })
-        });
-        if (!resp.ok) {
-          const errText = await resp.text();
-          // Twilio responses never echo the auth token; safe to log the body.
-          const detail = (() => { try { const j = JSON.parse(errText); return j.message ? `${j.message} (code ${j.code})` : errText.slice(0, 200); } catch { return errText.slice(0, 200); } })();
-          console.error(`[REGISTRATION] Twilio API error ${resp.status}: ${detail}`);
-          throw new Error(`Twilio error ${resp.status}: ${detail}`);
-        }
-      }
-    };
-  }
-  return null;
 }
 
 // ─── Registration Flow ──────────────────────────────────────────────────────
@@ -237,22 +106,21 @@ async function startRegistration(data, clientIp) {
         skills: profileData.skills || null, bio: profileData.bio || null,
         emergency_contact: profileData.emergencyContact || null,
         catering_name: profileData.cateringName || null, business_address: profileData.businessAddress || null,
-        business_phone: profileData.businessPhone || null, phone_verified: false, email_verified: false,
-        current_step: 'phone', status: 'pending', expires_at: expiresAt, updated_at: new Date().toISOString()
+        business_phone: profileData.businessPhone || null, email_verified: false,
+        current_step: 'email', status: 'pending', expires_at: expiresAt, updated_at: new Date().toISOString()
       }}
     );
     // Invalidate old OTPs
     await collection('otp_verifications').updateMany(
-      {email: normalizedEmail, purpose: {$in: [PHONE_PURPOSE, EMAIL_PURPOSE]}, is_verified: false},
+      {email: pendingEmail.token, purpose: {$in: [EMAIL_PURPOSE, 'phone_registration']}},
       {$set: {is_used: true, updated_at: new Date().toISOString()}}
     );
     return {
       success: true,
       registrationToken: pendingEmail.token,
-      maskedPhone: maskPhone(normalizedPhone),
       maskedEmail: maskEmail(normalizedEmail),
-      message: 'Registration information saved. Please verify your phone number.',
-      currentStep: 'phone'
+      message: 'Registration information saved. Please verify your email address.',
+      currentStep: 'email'
     };
   }
 
@@ -267,24 +135,23 @@ async function startRegistration(data, clientIp) {
     preferred_area: profileData.preferredArea || null, skills: profileData.skills || null,
     bio: profileData.bio || null, emergency_contact: profileData.emergencyContact || null,
     catering_name: profileData.cateringName || null, business_address: profileData.businessAddress || null,
-    business_phone: profileData.businessPhone || null, current_step: 'phone', status: 'pending',
-    phone_verified: false, email_verified: false, expires_at: expiresAt
+    business_phone: profileData.businessPhone || null, current_step: 'email', status: 'pending',
+    email_verified: false, expires_at: expiresAt
   });
 
   return {
     success: true,
     registrationToken: token,
-    maskedPhone: maskPhone(normalizedPhone),
     maskedEmail: maskEmail(normalizedEmail),
-    message: 'Registration information saved. Please verify your phone number.',
-    currentStep: 'phone'
+    message: 'Registration information saved. Please verify your email address.',
+    currentStep: 'email'
   };
 }
 
 /**
- * Step 3a: Send phone OTP
+ * Send an email OTP for registration.
  */
-async function sendPhoneVerification(registrationToken, clientIp) {
+async function sendEmailVerification(registrationToken) {
   const pending = await collection('pending_registrations').findOne({token: registrationToken, status: 'pending'});
   if (!pending) return { success: false, message: 'Invalid or expired registration session', status: 400 };
   if (pending.expires_at && parseExpiresAt(pending.expires_at) < Date.now()) {
@@ -294,140 +161,19 @@ async function sendPhoneVerification(registrationToken, clientIp) {
     return { success: false, message: 'Registration session has expired. Please start again.', status: 400 };
   }
 
-  // Anti-flooding: per-session and per-IP send throttling (sliding window)
-  const now = Date.now();
-  const cutoff = now - PHONE_RATE_WINDOW_MS;
-  const sessionSends = (phoneSendLog.get(registrationToken) || []).filter(t => t > cutoff);
-  const ipSends = (phoneIpLog.get(clientIp) || []).filter(t => t > cutoff);
-  if (sessionSends.length >= PHONE_MAX_PER_SESSION) {
-    return { success: false, message: 'Too many code requests for this registration. Please try again later.', status: 429 };
-  }
-  if (ipSends.length >= PHONE_MAX_PER_IP) {
-    return { success: false, message: 'Too many verification requests. Please try again later.', status: 429 };
-  }
-
-  console.log(`[REGISTRATION] Phone OTP requested (session=${String(registrationToken).slice(0, 8)}…, ip=${clientIp})`);
-
-  const senderName = process.env.SMTP_SENDER_NAME || 'PartTime Job';
-  const code = otpService.generateOtpCode();
-  const otpHash = await otpService.hashOtp(code);
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-
-  console.log('\n======================================================');
-  console.log(`📱 [PHONE OTP]: ${code}  (Target Phone: ${pending.phone})`);
-  if (!process.env.SMS_PROVIDER) {
-    console.log(`ℹ️ [NOTE]: No SMS provider configured. Sent via email fallback to ${process.env.DEV_PHONE_OTP_EMAIL || process.env.SMTP_FROM}`);
-  }
-  console.log('======================================================\n');
-
-  // Invalidate previous phone OTPs for this pending registration
-  await collection('otp_verifications').updateMany(
-    {email: pending.token, purpose: PHONE_PURPOSE, is_verified: false},
-    {$set: {is_used: true, updated_at: new Date().toISOString()}}
-  );
-
-  // Store OTP with registration token as identifier
-  await insertDocument('otp_verifications', {
-    email: pending.token, otp_hash: otpHash, purpose: PHONE_PURPOSE,
-    expires_at: expiresAt, attempts: 0, max_attempts: 5, is_verified: false, is_used: false
-  });
-
-  let deliveryResult = { deliveredViaSms: false };
-  try {
-    deliveryResult = await sendPhoneOtp(pending.phone, code, senderName);
-    console.log(`[REGISTRATION] Phone OTP processed (SMS: ${deliveryResult.deliveredViaSms}) for session=${String(registrationToken).slice(0, 8)}…`);
-  } catch (e) {
-    console.error('[REGISTRATION] Phone OTP send error:', e.message);
-  }
-
-  phoneSendLog.set(registrationToken, [...sessionSends, now]);
-  phoneIpLog.set(clientIp, [...ipSends, now]);
-
-  await collection('pending_registrations').updateOne(
-    {id: pending.id}, {$set: {current_step: 'phone', updated_at: new Date().toISOString()}}
-  );
-
-  return {
-    success: true,
-    maskedPhone: maskPhone(pending.phone),
-    expiresIn: 300,
-    devOtp: code,
-    message: deliveryResult && deliveryResult.deliveredViaSms
-      ? 'Verification code sent to your phone'
-      : `Dev Mode: Your OTP is ${code} (also emailed to ${maskEmail(process.env.DEV_PHONE_OTP_EMAIL || process.env.SMTP_FROM)})`
-  };
-}
-
-/**
- * Step 3b: Verify phone OTP
- */
-async function verifyPhoneOtp(registrationToken, otp) {
-  if (!otp || !/^\d{6}$/.test(otp)) {
-    return { success: false, message: 'Enter the complete 6-digit code', status: 400 };
-  }
-
-  const pending = await collection('pending_registrations').findOne({token: registrationToken, status: 'pending'});
-  if (!pending) return { success: false, message: 'Invalid or expired registration session', status: 400 };
-
-  // Find active phone OTP
-  const otpRecord = await collection('otp_verifications').findOne(
-    {email: pending.token, purpose: PHONE_PURPOSE, is_verified: false, is_used: false},
-    {sort: {created_at: -1}}
-  );
-
-  if (!otpRecord) return { success: false, message: 'No active verification code. Request a new one.', status: 400 };
-  if (parseExpiresAt(otpRecord.expires_at) < Date.now()) {
-    return { success: false, message: 'Verification code has expired. Request a new one.', status: 400 };
-  }
-  if (otpRecord.attempts >= otpRecord.max_attempts) {
-    return { success: false, message: 'Too many incorrect attempts. Request a new code.', status: 429 };
-  }
-
-  const matches = await otpService.verifyOtpHash(otp, otpRecord.otp_hash);
-  if (!matches) {
-    await collection('otp_verifications').updateOne(
-      {id: otpRecord.id}, {$inc: {attempts: 1}, $set: {updated_at: new Date().toISOString()}}
-    );
-    return { success: false, message: 'Incorrect verification code', status: 400 };
-  }
-
-  // Mark as verified
-  await collection('otp_verifications').updateOne(
-    {id: otpRecord.id}, {$set: {is_verified: true, is_used: true, updated_at: new Date().toISOString()}}
-  );
-  await collection('pending_registrations').updateOne(
-    {id: pending.id}, {$set: {phone_verified: true, current_step: 'email', updated_at: new Date().toISOString()}}
-  );
-
-  return {
-    success: true,
-    maskedEmail: maskEmail(pending.email),
-    message: 'Phone number verified successfully'
-  };
-}
-
-/**
- * Step 4a: Send email OTP
- */
-async function sendEmailVerification(registrationToken, clientIp) {
-  const pending = await collection('pending_registrations').findOne({token: registrationToken, status: 'pending'});
-  if (!pending) return { success: false, message: 'Invalid or expired registration session', status: 400 };
-  if (!pending.phone_verified) {
-    return { success: false, message: 'Please verify your phone number first', status: 400 };
+  const senderEmail = process.env.SMTP_FROM;
+  if (!senderEmail || !process.env.SMTP_HOST) {
+    return { success: false, message: 'Email service is not configured. Please contact the administrator.', status: 503 };
   }
 
   const senderName = process.env.SMTP_SENDER_NAME || 'PartTime Job';
   const code = otpService.generateOtpCode();
   const otpHash = await otpService.hashOtp(code);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-
-  console.log('\n======================================================');
-  console.log(`✉️ [EMAIL OTP]: ${code}  (Target Email: ${pending.email})`);
-  console.log('======================================================\n');
 
   // Invalidate previous email OTPs for this registration
   await collection('otp_verifications').updateMany(
-    {email: pending.token, purpose: EMAIL_PURPOSE, is_verified: false},
+    {email: pending.token, purpose: EMAIL_PURPOSE, is_verified: false, is_used: false},
     {$set: {is_used: true, updated_at: new Date().toISOString()}}
   );
 
@@ -438,11 +184,6 @@ async function sendEmailVerification(registrationToken, clientIp) {
 
   // Send email using the existing OTP service
   try {
-    const senderEmail = process.env.SMTP_FROM;
-    if (!senderEmail || !process.env.SMTP_HOST) {
-      return { success: false, message: 'Email service is not configured. Please contact the administrator.', status: 503 };
-    }
-
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -490,7 +231,6 @@ async function sendEmailVerification(registrationToken, clientIp) {
     success: true,
     maskedEmail: maskEmail(pending.email),
     expiresIn: 300,
-    devOtp: code,
     message: 'Verification code sent to your email'
   };
 }
@@ -505,8 +245,11 @@ async function verifyEmailOtp(registrationToken, otp) {
 
   const pending = await collection('pending_registrations').findOne({token: registrationToken, status: 'pending'});
   if (!pending) return { success: false, message: 'Invalid or expired registration session', status: 400 };
-  if (!pending.phone_verified) {
-    return { success: false, message: 'Please verify your phone number first', status: 400 };
+  if (pending.expires_at && parseExpiresAt(pending.expires_at) < Date.now()) {
+    await collection('pending_registrations').updateOne(
+      {id: pending.id}, {$set: {status: 'expired', updated_at: new Date().toISOString()}}
+    );
+    return { success: false, message: 'Registration session has expired. Please start again.', status: 400 };
   }
 
   const otpRecord = await collection('otp_verifications').findOne(
@@ -542,14 +285,20 @@ async function verifyEmailOtp(registrationToken, otp) {
 
 /**
  * Step 5: Complete registration — create the actual user account.
- * Only succeeds if BOTH phone_verified=1 AND email_verified=1.
+ * Only succeeds after the email address has been verified.
  */
 async function completeRegistration(registrationToken) {
   const pending = await collection('pending_registrations').findOne({token: registrationToken, status: 'pending'});
   if (!pending) return { success: false, message: 'Invalid or expired registration session', status: 400 };
+  if (pending.expires_at && parseExpiresAt(pending.expires_at) < Date.now()) {
+    await collection('pending_registrations').updateOne(
+      {id: pending.id}, {$set: {status: 'expired', updated_at: new Date().toISOString()}}
+    );
+    return { success: false, message: 'Registration session has expired. Please start again.', status: 400 };
+  }
 
-  if (!pending.phone_verified || !pending.email_verified) {
-    return { success: false, message: 'Both phone and email must be verified before completing registration', status: 400 };
+  if (!pending.email_verified) {
+    return { success: false, message: 'Verify your email before completing registration', status: 400 };
   }
 
   // Create the user account in a transaction
@@ -579,11 +328,11 @@ async function completeRegistration(registrationToken) {
         {id: pending.id}, {$set: {status: 'completed', updated_at: now}}, {session}
       );
       await collection('otp_verifications').updateMany(
-        {email: pending.token, purpose: {$in: [PHONE_PURPOSE, EMAIL_PURPOSE]}},
+        {email: pending.token, purpose: {$in: [EMAIL_PURPOSE, 'phone_registration']}},
         {$set: {is_used: true, updated_at: now}}, {session}
       );
       await collection('otp_verifications').updateMany(
-        {email: pending.token, purpose: {$in: [PHONE_PURPOSE, EMAIL_PURPOSE]}, is_verified: true},
+        {email: pending.token, purpose: EMAIL_PURPOSE, is_verified: true},
         {$set: {email: pending.email, updated_at: now}}, {session}
       );
       return user;
@@ -622,46 +371,32 @@ async function completeRegistration(registrationToken) {
 async function getRegistrationStatus(registrationToken) {
   const pending = await collection('pending_registrations').findOne(
     {token: registrationToken},
-    {projection: {token: 1, role: 1, phone_verified: 1, email_verified: 1, current_step: 1, status: 1, email: 1, phone: 1}}
+    {projection: {token: 1, role: 1, email_verified: 1, current_step: 1, status: 1, email: 1}}
   );
   if (!pending) return null;
   return {
     role: pending.role,
-    phoneVerified: !!pending.phone_verified,
     emailVerified: !!pending.email_verified,
     currentStep: pending.current_step,
     status: pending.status,
-    maskedPhone: maskPhone(pending.phone),
     maskedEmail: maskEmail(pending.email)
   };
 }
 
 /**
- * Resend phone OTP
- */
-async function resendPhoneOtp(registrationToken, clientIp) {
-  return sendPhoneVerification(registrationToken, clientIp);
-}
-
-/**
  * Resend email OTP
  */
-async function resendEmailOtp(registrationToken, clientIp) {
-  return sendEmailVerification(registrationToken, clientIp);
+async function resendEmailOtp(registrationToken) {
+  return sendEmailVerification(registrationToken);
 }
 
 // ─── Exports ────────────────────────────────────────────────────────────────
 
 module.exports = {
   startRegistration,
-  sendPhoneVerification,
-  verifyPhoneOtp,
   sendEmailVerification,
   verifyEmailOtp,
   completeRegistration,
   getRegistrationStatus,
-  resendPhoneOtp,
-  resendEmailOtp,
-  maskPhone,
-  maskEmail
+  resendEmailOtp
 };

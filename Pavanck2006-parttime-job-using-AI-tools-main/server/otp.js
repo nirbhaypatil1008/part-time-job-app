@@ -162,10 +162,6 @@ async function sendOtp(email, purpose, ip, templateFn) {
   const code = generateOtpCode();
   const otpHash = await hashOtp(code);
 
-  console.log('\n======================================================');
-  console.log(`🔑 [OTP CODE]: ${code}  (Email: ${normalizedEmail}, Purpose: ${purpose})`);
-  console.log('======================================================\n');
-
   // Store in database
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
   const otpRecord = await insertDocument('otp_verifications', {
@@ -195,7 +191,6 @@ async function sendOtp(email, purpose, ip, templateFn) {
   return {
     success: true,
     expiresIn: OTP_EXPIRY_MINUTES * 60,
-    devOtp: code,
     message: 'Verification code sent by email'
   };
 }
