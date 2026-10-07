@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PartTime Job - Catering &amp; Event Student Portal | Find Work. Earn More. Work Safely.</title>
+  <meta name="description" content="Connect students looking for short-term part-time work with verified catering owners and event organizers. On-spot payments, verified shifts, and zero commission.">
+
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom Modern Design System -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Google Translate -->
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,kn,hi,ta,te,ml,bn,gu,mr,ur,fr,es,de,ja,zh-CN,ko,pt,ru,ar,it,th,vi,tr,pl,nl,sv,da,fi,no,cs,el,hu,ro,uk,id,ms',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,kn,hi,ta,te,ml,bn,gu,mr,ur,fr,es,de,ja,zh-CN,ko,pt,ru,ar,it,th,vi,tr,pl,nl,sv,da,fi,no,cs,el,hu,ro,uk,id,ms',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element_auth');
+    }
+  </script>
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <style>
+    .goog-te-banner-frame { display: none !important; }
+    body { top: 0 !important; }
+    /* Hide default Google Translate widget, we use our own */
+    #google_translate_element, #google_translate_element_auth { position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
+    /* Custom language selector */
+    .lang-selector { position: relative; }
+    .lang-selector-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 8px; border: 1px solid var(--light-border, #e2e8f0);
+      background: var(--light-surface, #fff); color: var(--text-dark, #0f172a);
+      font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .lang-selector-btn:hover { background: var(--primary-light, #eef2ff); border-color: var(--primary, #4f46e5); }
+    .lang-selector-btn i { font-size: 11px; }
+    .lang-dropdown {
+      display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 9999;
+      background: var(--light-surface, #fff); border: 1px solid var(--light-border, #e2e8f0);
+      border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      width: 260px; max-height: 380px; overflow: hidden;
+    }
+    .lang-dropdown.open { display: block; }
+    .lang-search {
+      width: 100%; padding: 10px 14px; border: none; border-bottom: 1px solid var(--light-border, #e2e8f0);
+      font-size: 13px; outline: none; background: transparent;
+    }
+    .lang-list { max-height: 330px; overflow-y: auto; padding: 4px 0; }
+    .lang-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; cursor: pointer; font-size: 13px; transition: background 0.15s;
+    }
+    .lang-option:hover { background: var(--primary-light, #eef2ff); }
+    .lang-option.active { background: var(--primary-light, #eef2ff); color: var(--primary, #4f46e5); font-weight: 600; }
+    .lang-flag { font-size: 18px; line-height: 1; }
+    .lang-name { flex: 1; }
+    .lang-name small { display: block; font-size: 11px; color: var(--text-muted, #64748b); font-weight: 400; }
+    .lang-option.active .lang-name small { color: var(--primary, #4f46e5); }
+  </style>
+  <script>
+    const LANGUAGES = [
+      {code:'en',flag:'🇬🇧',name:'English',native:'English'},
+      {code:'kn',flag:'🇮🇳',name:'Kannada',native:'ಕನ್ನಡ'},
+      {code:'hi',flag:'🇮🇳',name:'Hindi',native:'हिन्दी'},
+      {code:'ta',flag:'🇮🇳',name:'Tamil',native:'தமிழ்'},
+      {code:'te',flag:'🇮🇳',name:'Telugu',native:'తెలుగు'},
+      {code:'ml',flag:'🇮🇳',name:'Malayalam',native:'മലയാളം'},
+      {code:'bn',flag:'🇮🇳',name:'Bengali',native:'বাংলা'},
+      {code:'gu',flag:'🇮🇳',name:'Gujarati',native:'ગુજરાતી'},
+      {code:'mr',flag:'🇮🇳',name:'Marathi',native:'मराठी'},
+      {code:'ur',flag:'🇮🇳',name:'Urdu',native:'اردو'},
+      {code:'fr',flag:'🇫🇷',name:'French',native:'Français'},
+      {code:'es',flag:'🇪🇸',name:'Spanish',native:'Español'},
+      {code:'de',flag:'🇩🇪',name:'German',native:'Deutsch'},
+      {code:'ja',flag:'🇯🇵',name:'Japanese',native:'日本語'},
+      {code:'zh-CN',flag:'🇨🇳',name:'Chinese',native:'中文'},
+      {code:'ko',flag:'🇰🇷',name:'Korean',native:'한국어'},
+      {code:'pt',flag:'🇧🇷',name:'Portuguese',native:'Português'},
+      {code:'ru',flag:'🇷🇺',name:'Russian',native:'Русский'},
+      {code:'ar',flag:'🇸🇦',name:'Arabic',native:'العربية'},
+      {code:'it',flag:'🇮🇹',name:'Italian',native:'Italiano'},
+      {code:'th',flag:'🇹🇭',name:'Thai',native:'ไทย'},
+      {code:'vi',flag:'🇻🇳',name:'Vietnamese',native:'Tiếng Việt'},
+      {code:'tr',flag:'🇹🇷',name:'Turkish',native:'Türkçe'},
+      {code:'pl',flag:'🇵🇱',name:'Polish',native:'Polski'},
+      {code:'nl',flag:'🇳🇱',name:'Dutch',native:'Nederlands'},
+      {code:'id',flag:'🇮🇩',name:'Indonesian',native:'Bahasa Indonesia'},
+      {code:'ms',flag:'🇲🇾',name:'Malay',native:'Bahasa Melayu'},
+    ];
+    let currentLang = localStorage.getItem('ptj_lang') || 'en';
+
+    function createLangSelector(containerId) {
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      var cur = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
+      container.innerHTML = '<div class="lang-selector">' +
+        '<button class="lang-selector-btn" onclick="toggleLangDropdown(this)">' +
+        '<span class="lang-flag">' + cur.flag + '</span>' +
+        '<span>' + cur.native + '</span>' +
+        '<i class="bi bi-chevron-down"></i></button>' +
+        '<div class="lang-dropdown">' +
+        '<input type="text" class="lang-search" placeholder="Search language..." oninput="filterLanguages(this.value, this.nextElementSibling)">' +
+        '<div class="lang-list" id="langList_' + containerId + '"></div></div></div>';
+      renderLangList('langList_' + containerId);
+    }
+
+    function renderLangList(listId) {
+      var list = document.getElementById(listId);
+      if (!list) return;
+      var q = (list.previousElementSibling?.value || '').toLowerCase();
+      var filtered = LANGUAGES.filter(l => !q || l.name.toLowerCase().includes(q) || l.native.toLowerCase().includes(q));
+      list.innerHTML = filtered.map(l =>
+        '<div class="lang-option' + (l.code === currentLang ? ' active' : '') + '" onclick="selectLanguage('' + l.code + '', this.closest('.lang-selector'))">' +
+        '<span class="lang-flag">' + l.flag + '</span>' +
+        '<span class="lang-name">' + l.name + '<small>' + l.native + '</small></span>' +
+        '</div>'
+      ).join('');
+    }
+
+    function filterLanguages(query, list) {
+      var q = query.toLowerCase();
+      var filtered = LANGUAGES.filter(l => l.name.toLowerCase().includes(q) || l.native.toLowerCase().includes(q));
+      list.innerHTML = filtered.map(l =>
+        '<div class="lang-option' + (l.code === currentLang ? ' active' : '') + '" onclick="selectLanguage('' + l.code + '', this.closest('.lang-selector'))">' +
+        '<span class="lang-flag">' + l.flag + '</span>' +
+        '<span class="lang-name">' + l.name + '<small>' + l.native + '</small></span>' +
+        '</div>'
+      ).join('');
+    }
+
+    function selectLanguage(code, selector) {
+      currentLang = code;
+      localStorage.setItem('ptj_lang', code);
+      // Trigger Google Translate
+      var gtSelect = document.querySelector('#google_translate_element select');
+      if (gtSelect) {
+        gtSelect.value = code;
+        gtSelect.dispatchEvent(new Event('change'));
+      }
+      // Rebuild all selectors
+      document.querySelectorAll('.lang-selector').forEach(s => {
+        var id = s.parentElement?.id;
+        if (id) createLangSelector(id);
+      });
+      // Close dropdown
+      document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
+    }
+
+    function toggleLangDropdown(btn) {
+      var dd = btn.nextElementSibling;
+      var wasOpen = dd.classList.contains('open');
+      document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
+      if (!wasOpen) {
+        dd.classList.add('open');
+        dd.querySelector('.lang-search').value = '';
+        dd.querySelector('.lang-search').focus();
+        renderLangList(dd.querySelector('.lang-list')?.id);
+      }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.lang-selector')) {
+        document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      createLangSelector('langGuest');
+      createLangSelector('langAuth');
+    });
+  </script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- NAVBAR -->
+  <!-- ========================================================================= -->
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="javascript:void(0)" onclick="App.openRoleDashboard()" title="Open dashboard">
+        <span class="brand-badge"><i class="bi bi-briefcase-fill"></i> PT</span>
+        <span class="brand-text">Part<span>Time</span></span>
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom active" data-view="home" href="javascript:void(0)" onclick="App.navigate('home')">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" data-view="jobs" href="javascript:void(0)" onclick="App.navigate('jobs')">Find Jobs</a>
+          </li>
+          <li class="nav-item d-none d-lg-inline">
+            <a class="nav-link" id="navHowItWorks" href="javascript:void(0)" onclick="App.goToSection('how-it-works')">How It Works</a>
+          </li>
+          <li class="nav-item d-none d-lg-inline">
+            <a class="nav-link" id="navSafety" href="javascript:void(0)" onclick="App.goToSection('safety-section')">Safety</a>
+          </li>
+        </ul>
+
+        <!-- Guest Nav -->
+        <div id="guestNav" class="d-flex align-items-center gap-2">
+          <div id="langGuest"></div>
+          <button class="btn btn-light btn-sm border theme-toggle" id="themeToggle" type="button" onclick="App.toggleTheme()" aria-label="Switch to dark mode" title="Switch to dark mode">
+            <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+            <span class="visually-hidden">Switch theme</span>
+          </button>
+          <button class="btn btn-outline-dark btn-sm px-3" onclick="App.openLoginModal()">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+          </button>
+          <a href="/register.html" class="btn btn-primary-custom btn-sm px-3">
+            <i class="bi bi-person-plus me-1"></i>Register
+          </a>
+        </div>
+
+        <!-- Authenticated User Nav -->
+        <div id="authNav" class="d-none d-flex align-items-center gap-3">
+          <div id="langAuth"></div>
+          <button class="btn btn-light btn-sm border theme-toggle" id="themeToggleAuth" type="button" onclick="App.toggleTheme()" aria-label="Switch to dark mode" title="Switch to dark mode">
+            <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+            <span class="visually-hidden">Switch theme</span>
+          </button>
+          <!-- Notification Bell -->
+          <button class="btn btn-light btn-sm position-relative rounded-circle p-2 border" id="notifDropdownBtn" onclick="App.toggleNotifPanel()">
+            <i class="bi bi-bell-fill fs-6" style="color: var(--color-text)"></i>
+            <span id="notifBadge" class="notif-badge d-none">0</span>
+          </button>
+
+          <!-- Notification Panel Overlay -->
+          <div class="notif-overlay d-none" id="notifOverlay" onclick="App.toggleNotifPanel()"></div>
+          <div class="notif-panel d-none" id="notifPanel">
+            <div class="notif-panel-header">
+              <button class="notif-panel-back" onclick="App.toggleNotifPanel()"><i class="bi bi-arrow-left"></i></button>
+              <span class="fw-bold">Notifications</span>
+              <button class="btn btn-link btn-sm p-0 text-decoration-none ms-auto" id="markAllNotifsReadBtn">Mark all read</button>
+            </div>
+            <div class="notif-panel-body" id="notifList">
+              <div class="p-3 text-center text-muted">No new notifications</div>
+            </div>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div class="dropdown">
+            <button class="btn btn-light btn-sm dropdown-toggle border d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+              <img id="navUserPhoto" src="" alt="" class="rounded-circle d-none" style="width:28px;height:28px;object-fit:cover;">
+              <i class="bi bi-person-circle fs-5 text-primary" id="navUserPhotoIcon"></i>
+              <span id="userDisplayName" class="fw-semibold">User</span>
+              <span id="userRoleBadge" class="badge bg-secondary ms-1">Role</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="App.openSettingsSection('profile')"><i class="bi bi-person-gear me-2 text-primary"></i>Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="Auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+            </ul>
+          </div>
+
+
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <main id="view-settings" class="view-section d-none py-5">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill fw-bold">Account Center</span><h2 class="fw-bold mt-2 mb-1">Settings</h2><p class="text-muted mb-0">Manage your profile, payments, complaints, and conversations.</p></div>
+        <button class="btn btn-outline-primary" type="button" onclick="App.openRoleDashboard()"><i class="bi bi-arrow-left me-1"></i>Back to Dashboard</button>
+      </div>
+      <div class="settings-layout">
+        <aside class="settings-sidebar">
+          <button class="settings-nav active" data-settings-panel="profile" onclick="App.showSettingsPanel('profile')"><i class="bi bi-person-gear"></i><span>My Profile</span></button>
+          <button class="settings-nav" data-settings-panel="payments" onclick="App.showSettingsPanel('payments')"><i class="bi bi-wallet2"></i><span>Payments</span></button>
+          <button class="settings-nav" data-settings-panel="complaints" onclick="App.showSettingsPanel('complaints')"><i class="bi bi-shield-exclamation"></i><span>Complaints</span></button>
+          <button class="settings-nav" data-settings-panel="chat" onclick="App.showSettingsPanel('chat')"><i class="bi bi-chat-dots"></i><span>Complaint Chat</span></button>
+        </aside>
+        <section id="settingsContent" class="settings-content"></section>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 1: HOME / LANDING PAGE -->
+  <!-- ========================================================================= -->
+  <div id="view-home" class="view-section">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-7 mb-4 mb-lg-0">
+            <div class="feature-pill mb-3">
+              <i class="bi bi-shield-check text-success"></i> 100% Verified Catering Shifts &amp; On-Spot Payment
+            </div>
+            <h1 class="hero-title mb-3">Find Part-Time<br>Work Near You</h1>
+            <p class="hero-subtitle mb-4">
+              Connect students with trusted catering and event jobs. Flexible shifts for food servers, kitchen helpers, cleaners, and event staff with on-spot payments.
+            </p>
+            <div class="d-flex flex-wrap gap-3 mb-4">
+              <button class="btn btn-primary-custom btn-lg px-4" onclick="App.navigate('jobs')">
+                <i class="bi bi-search me-2"></i>Find Jobs
+              </button>
+              <a href="/register.html" class="btn btn-outline-dark btn-lg px-4">
+                <i class="bi bi-plus-circle me-2"></i>Post a Job
+              </a>
+            </div>
+            <div class="d-flex flex-wrap gap-2 text-muted small">
+              <span><i class="bi bi-check-circle-fill text-success me-1"></i>₹700 – ₹1,200 / Shift</span>
+              <span class="mx-2">·</span>
+              <span><i class="bi bi-check-circle-fill text-success me-1"></i>On-Spot Payment</span>
+              <span class="mx-2">·</span>
+              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Zero Commission</span>
+            </div>
+          </div>
+
+          <!-- Quick Search Box -->
+          <div class="col-lg-5">
+            <div class="search-box-card">
+              <h5 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Shift Search</h5>
+              <form id="heroSearchForm">
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Preferred Area in Bangalore</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                    <input type="text" id="heroAreaInput" class="form-control" placeholder="e.g. Kengeri, Koramangala, Indiranagar">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Work Role</label>
+                  <select id="heroWorkTypeSelect" class="form-select">
+                    <option value="">All Catering Roles</option>
+                    <option value="FOOD_SERVER">Food Server</option>
+                    <option value="CATERING_HELPER">Catering Helper</option>
+                    <option value="KITCHEN_HELPER">Kitchen Helper</option>
+                    <option value="CLEANER">Cleaner</option>
+                    <option value="EVENT_HELPER">Event Helper</option>
+                    <option value="WAITER">Waiter</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                  <i class="bi bi-search me-2"></i>Search Shifts
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Stats Banner -->
+    <section class="py-4 bg-white border-bottom">
+      <div class="container">
+        <div class="row g-3 text-center">
+          <div class="col-6 col-md-3">
+            <div class="fs-2 fw-bold" style="color: var(--color-action); font-family: var(--font-heading);">₹750+</div>
+            <div class="text-muted small fw-semibold">Avg. Shift Earnings</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="fs-2 fw-bold" style="color: var(--color-success); font-family: var(--font-heading);">100%</div>
+            <div class="text-muted small fw-semibold">On-Spot Payment</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="fs-2 fw-bold" style="color: var(--color-text); font-family: var(--font-heading);">50+</div>
+            <div class="text-muted small fw-semibold">Verified Caterers</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="fs-2 fw-bold" style="color: var(--color-action); font-family: var(--font-heading);">0%</div>
+            <div class="text-muted small fw-semibold">Platform Fee for Students</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Live Jobs Section -->
+    <section class="py-5">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h3 class="fw-bold mb-1">Available Catering Shifts</h3>
+            <p class="text-muted mb-0">Browse latest part-time opportunities for students with instant application.</p>
+          </div>
+          <button class="btn btn-outline-primary btn-sm px-3" onclick="App.navigate('jobs')">
+            View All Jobs <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+
+        <div id="homeJobsList" class="row">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-5 bg-white border-top border-bottom">
+      <div class="container">
+        <div class="text-center max-w-700 mx-auto mb-5">
+          <span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill fw-bold">Simple &amp; Fast</span>
+          <h2 class="fw-bold mt-2">How PartTime Job Works</h2>
+          <p class="text-muted">Follow these steps to find work safely, hire reliable staff, and complete every shift correctly.</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+          <div class="col-md-6">
+            <div class="card h-100 p-4 border-0 shadow-sm bg-light">
+              <h5 class="fw-bold text-primary mb-3"><i class="bi bi-mortarboard-fill me-2"></i>For Students</h5>
+              <div class="d-flex gap-3 mb-3">
+                <div class="metric-icon bg-primary text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">1</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Browse &amp; Filter Shifts</h6>
+                  <p class="text-muted small mb-0">Open Browse Jobs and filter by area, work type, date, payment, and minimum pay. Read the duties, timing, worker limit, and payment details before applying.</p>
+                </div>
+              </div>
+              <div class="d-flex gap-3 mb-3">
+                <div class="metric-icon bg-primary text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">2</div>
+                <div>
+                  <h6 class="fw-bold mb-1">1-Click Application</h6>
+                  <p class="text-muted small mb-0">Register as a Student, choose your skills, complete your phone and preferred-area details, then open a job and submit your application with an optional note.</p>
+                </div>
+              </div>
+              <div class="d-flex gap-3 mb-3">
+                <div class="metric-icon bg-primary text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">3</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Unlock Exact Venue &amp; Contact</h6>
+                  <p class="text-muted small mb-0">Wait for the owner to review your name, phone, skills, and application note. You will receive an in-app notification when accepted, and the Accepted Shifts tab will show the exact venue and contact details.</p>
+                </div>
+              </div>
+              <div class="d-flex gap-3">
+                <div class="metric-icon bg-success text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">4</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Get Paid On-Spot</h6>
+                  <p class="text-muted small mb-0">Arrive on time, follow the owner&apos;s instructions, and confirm attendance. After completing the shift, receive the agreed cash or UPI payment and confirm it in the app.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card h-100 p-4 border-0 shadow-sm bg-light">
+              <h5 class="fw-bold text-success mb-3"><i class="bi bi-building-check me-2"></i>For Catering Owners</h5>
+              <div class="d-flex gap-3 mb-3">
+                <div class="metric-icon bg-success text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">1</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Post Catering Shift in 2 Minutes</h6>
+                  <p class="text-muted small mb-0">Register as an Owner, complete your business profile, then create a job with the title, duties, work area, exact venue, date, hours, payment, worker count, skills, and contact details.</p>
+                </div>
+              </div>
+              <div class="d-flex gap-3 mb-3">
+                <div class="metric-icon bg-success text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">2</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Review College Student Applicants</h6>
+                  <p class="text-muted small mb-0">Open the applicants list for a job and verify each student&apos;s name, phone number, skills, rating, completed jobs, and application note before making a decision.</p>
+                </div>
+              </div>
+              <div class="d-flex gap-3 mb-3">
+                <div class="metric-icon bg-success text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">3</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Accept Workers with Slot Limits</h6>
+                  <p class="text-muted small mb-0">Accept suitable applicants until the required worker limit is reached. The platform updates hired slots automatically and closes the job when all slots are filled.</p>
+                </div>
+              </div>
+              <div class="d-flex gap-3">
+                <div class="metric-icon bg-primary text-white rounded-circle flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">4</div>
+                <div>
+                  <h6 class="fw-bold mb-1">Mark Attendance &amp; Complete Shift</h6>
+                  <p class="text-muted small mb-0">Mark each accepted worker Present or Absent, complete the job after the shift, mark the payment as Paid, and wait for the student to confirm receipt.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm bg-light">
+              <h5 class="fw-bold text-primary mb-3"><i class="bi bi-person-check-fill me-2"></i>Account Setup</h5>
+              <p class="text-muted small mb-2">Choose the correct role when registering:</p>
+              <ul class="text-muted small ps-3 mb-0">
+                <li>Students select their available skills and preferred work area.</li>
+                <li>Owners add their catering business details and contact information.</li>
+                <li>Use Sign In to return to your dashboard at any time.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm bg-light">
+              <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i>Safety &amp; Privacy</h5>
+              <p class="text-muted small mb-0">Only the general work area is public. Exact venue and contact information is revealed to a student after the owner accepts the application. Meet at the listed venue, verify the job before starting, and never share your password.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm bg-light">
+              <h5 class="fw-bold text-warning mb-3"><i class="bi bi-flag-fill me-2"></i>Payments &amp; Complaints</h5>
+              <p class="text-muted small mb-0">Owners mark payment as Paid after handing over the agreed amount. Students confirm the payment in Accepted Shifts. If payment, location, job details, or behaviour is a problem, use File Complaint and provide accurate evidence for admin review.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety & Verification Section -->
+    <section id="safety-section" class="py-5 bg-light">
+      <div class="container">
+        <div class="text-center max-w-700 mx-auto mb-5">
+          <span class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill fw-bold">Trust &amp; Security</span>
+          <h2 class="fw-bold mt-2">Safety, Privacy &amp; Dispute Protection</h2>
+          <p class="text-muted">We build a trusted community where students work safely and organizers get punctual helpers.</p>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm text-center">
+              <div class="metric-icon bg-primary-subtle text-primary rounded-circle mx-auto mb-3">
+                <i class="bi bi-shield-lock-fill"></i>
+              </div>
+              <h5 class="fw-bold">Location &amp; Contact Masking</h5>
+              <p class="text-muted small">
+                Exact addresses and personal phone numbers remain concealed from general view. Only confirmed and accepted students can see full venue details.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm text-center">
+              <div class="metric-icon bg-success-subtle text-success rounded-circle mx-auto mb-3">
+                <i class="bi bi-patch-check-fill"></i>
+              </div>
+              <h5 class="fw-bold">Owner Verification Badge</h5>
+              <p class="text-muted small">
+                Catering companies are reviewed and verified by platform administrators. Students receive safety notices before applying to unverified organizers.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm text-center">
+              <div class="metric-icon bg-danger-subtle text-danger rounded-circle mx-auto mb-3">
+                <i class="bi bi-exclamation-octagon-fill"></i>
+              </div>
+              <h5 class="fw-bold">Payment Dispute Redressal</h5>
+              <p class="text-muted small">
+                If a student does not receive the promised on-spot amount, our 1-click dispute filing alerts administrators for rapid investigation and resolution.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq-section" class="py-5 bg-white border-top">
+      <div class="container">
+        <div class="text-center max-w-700 mx-auto mb-5">
+          <h2 class="fw-bold">Frequently Asked Questions</h2>
+          <p class="text-muted">Everything you need to know about PartTime Job.</p>
+        </div>
+
+        <div class="accordion max-w-800 mx-auto shadow-sm" id="faqAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button fw-bold" type="button" data-bs-target="#faq1" data-bs-toggle="collapse">
+                How does On-Spot Payment work?
+              </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                At the conclusion of the shift, the catering owner hands over the agreed payment directly to the student in cash or UPI. The owner marks the payment as "PAID" on their dashboard, and the student confirms receipt.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold" type="button" data-bs-target="#faq2" data-bs-toggle="collapse">
+                Is there any fee or commission deducted from students?
+              </button>
+            </h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                No! The PartTime Job platform is 100% free for students. The entire payment amount specified on the job posting goes directly to the student.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold" type="button" data-bs-target="#faq3" data-bs-toggle="collapse">
+                What if an owner does not pay the promised amount?
+              </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                Students can file a formal Payment Dispute directly from their accepted/completed shifts tab. Our administrator team reviews the case and takes strict action, including owner account suspension.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 2: BROWSE JOBS -->
+  <!-- ========================================================================= -->
+  <div id="view-jobs" class="view-section d-none py-5">
+    <div class="container">
+      <div class="mb-4">
+        <h2 class="fw-bold mb-1">Browse Available Shifts</h2>
+        <p class="text-muted">Filter by area, role, date, and payment rate.</p>
+      </div>
+
+      <!-- Filter Controls Bar -->
+      <div class="card p-3 mb-4 shadow-sm border-0 bg-white">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold">Filter by Area</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+              <input type="text" id="filterArea" class="form-control" placeholder="e.g. Kengeri">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold">Role Type</label>
+            <select id="filterWorkType" class="form-select form-select-sm">
+              <option value="">All Work Types</option>
+              <option value="FOOD_SERVER">Food Server</option>
+              <option value="CATERING_HELPER">Catering Helper</option>
+              <option value="KITCHEN_HELPER">Kitchen Helper</option>
+              <option value="CLEANER">Cleaner</option>
+              <option value="EVENT_HELPER">Event Helper</option>
+              <option value="WAITER">Waiter</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-semibold">Shift Date</label>
+            <input type="date" id="filterDate" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-semibold">Min. Pay (₹)</label>
+            <input type="number" id="filterMinPay" class="form-control form-control-sm" placeholder="e.g. 600" step="50">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-semibold">Payment Type</label>
+            <select id="filterPaymentType" class="form-select form-select-sm">
+              <option value="">All Payment Types</option>
+              <option value="ON_SPOT_PAYMENT">On-Spot Payment</option>
+              <option value="AFTER_WORK">After Work</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jobs Grid -->
+      <div id="browseJobsList" class="row">
+        <!-- Dynamically Populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 3: STUDENT DASHBOARD -->
+  <!-- ========================================================================= -->
+  <div id="view-student-dashboard" class="view-section d-none py-5">
+    <div class="container">      <!-- Welcome Header -->
+      <div class="dashboard-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <span class="badge bg-white text-primary mb-2 fw-bold" style="font-size: 0.72rem;">Student Portal</span>
+            <h2 class="fw-bold mb-1">Welcome, <span id="stWelcomeName">Student</span>!</h2>
+            <div class="d-flex flex-wrap gap-2 text-white-50 small">
+              <span id="stCollegeBadge">College</span>
+              <span>·</span>
+              <span id="stAreaBadge">📍 Preferred Area</span>
+              <span>·</span>
+              <span id="stRatingBadge" class="text-warning">★ 5.0</span>
+            </div>
+          </div>
+          <button class="btn btn-light btn-sm fw-bold text-primary px-3" onclick="App.navigate('jobs')">
+            <i class="bi bi-search me-1"></i>Find More Shifts
+          </button>
+        </div>
+      </div>
+
+      <!-- Metric Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Available Shifts</div>
+                <div class="metric-val text-primary" id="stStatAvailable">0</div>
+              </div>
+              <div class="metric-icon bg-primary-subtle text-primary"><i class="bi bi-briefcase"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Applied Shifts</div>
+                <div class="metric-val text-warning" id="stStatApplied">0</div>
+              </div>
+              <div class="metric-icon bg-warning-subtle text-warning"><i class="bi bi-send"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Accepted Shifts</div>
+                <div class="metric-val text-success" id="stStatAccepted">0</div>
+              </div>
+              <div class="metric-icon bg-success-subtle text-success"><i class="bi bi-check2-circle"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Completed Shifts</div>
+                <div class="metric-val text-info" id="stStatCompleted">0</div>
+              </div>
+              <div class="metric-icon bg-info-subtle text-info"><i class="bi bi-briefcase-fill"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Total Earnings</div>
+                <div class="metric-val text-emerald-dark" id="stStatEarnings">₹0</div>
+              </div>
+              <div class="metric-icon bg-emerald text-success"><i class="bi bi-wallet2"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav nav-pills nav-pills-custom mb-4" id="studentTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#st-tab-available">
+            <i class="bi bi-briefcase me-1"></i>Available Jobs
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#st-tab-recommended">
+            <i class="bi bi-stars me-1"></i>Recommended
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#st-tab-accepted">
+            <i class="bi bi-calendar2-check-fill me-1"></i>Accepted Shifts
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#st-tab-completed">
+            <i class="bi bi-check-all me-1"></i>Completed Shifts
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#st-tab-deletion-requests">
+            <i class="bi bi-trash me-1"></i>Deletion Requests
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#st-tab-transactions">
+            <i class="bi bi-receipt me-1"></i>Transactions
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Contents -->
+      <div class="tab-content">
+        <!-- 1. Available Jobs -->
+        <div class="tab-pane fade show active" id="st-tab-available">
+          <div class="mb-3">
+            <h5 class="fw-bold mb-2"><i class="bi bi-briefcase me-2"></i>All Available Jobs</h5>
+            <p class="text-muted small mb-3">Browse all catering jobs from every area. Use the search bar to find jobs in a specific location.</p>
+            <div class="input-group mb-3">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control border-start-0" id="stAvailableSearch" placeholder="Search by area, job title, or business name..." oninput="Student.filterAvailableJobs()">
+            </div>
+          </div>
+          <div id="stAvailableJobsList" class="row"></div>
+        </div>
+
+        <!-- 2. Recommended -->
+        <div class="tab-pane fade" id="st-tab-recommended">
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Recommended for your area &amp; skills</h5>
+          </div>
+          <div id="stRecommendedList" class="row"></div>
+        </div>
+
+        <!-- 2. Accepted Shifts -->
+        <div class="tab-pane fade" id="st-tab-accepted">
+          <div class="alert alert-success d-flex align-items-center mb-3">
+            <i class="bi bi-info-circle-fill fs-5 me-2"></i>
+            <div>Exact venue address and organizer direct phone are unlocked below for all confirmed shifts!</div>
+          </div>
+          <div id="stAcceptedList" class="row"></div>
+        </div>
+
+        <!-- 3. Applications -->
+        <div class="tab-pane fade" id="st-tab-applications">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job Title / Catering</th>
+                  <th>Role</th>
+                  <th>Area</th>
+                  <th>Date &amp; Time</th>
+                  <th>Pay</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="stApplicationsList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Completed -->
+        <div class="tab-pane fade" id="st-tab-completed">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Catering</th>
+                  <th>Date</th>
+                  <th>Pay Amount</th>
+                  <th>Payment Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="stCompletedList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Deletion Requests -->
+        <div class="tab-pane fade" id="st-tab-deletion-requests">
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-trash me-2"></i>Job Deletion Requests</h5>
+            <small class="text-muted">The owner wants to delete jobs you were hired for</small>
+          </div>
+          <div id="stDeletionRequestsList" class="row"></div>
+        </div>
+
+        <!-- 5. Payments -->
+        <div class="tab-pane fade" id="st-tab-payments">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Student Name</th>
+                  <th>Amount</th>
+                  <th>Payment Mode</th>
+                  <th>Payment Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="stPaymentsList"></tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <!-- 8. Transaction History -->
+        <div class="tab-pane fade" id="st-tab-transactions">
+          <div class="mb-3">
+            <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>Transaction History</h5>
+            <p class="text-muted small mb-3">Complete record of all your online and on-spot payments. Click a transaction to view full details.</p>
+          </div>
+          <!-- Transaction Summary Cards -->
+          <div class="row g-3 mb-4" id="stTxSummary">
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Total Paid</div>
+                <div class="fw-bold fs-5 text-success" id="stTxPaidCount">0</div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Failed</div>
+                <div class="fw-bold fs-5 text-danger" id="stTxFailedCount">0</div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Cancelled</div>
+                <div class="fw-bold fs-5 text-warning" id="stTxCancelledCount">0</div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Total Amount</div>
+                <div class="fw-bold fs-5 text-primary" id="stTxTotalAmount">₹0</div>
+              </div>
+            </div>
+          </div>
+          <!-- Filter Buttons -->
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-sm btn-primary" onclick="Student.filterTransactions('ALL')">All</button>
+            <button class="btn btn-sm btn-outline-success" onclick="Student.filterTransactions('SUCCESS')">Paid</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="Student.filterTransactions('FAILED')">Failed</button>
+            <button class="btn btn-sm btn-outline-warning" onclick="Student.filterTransactions('CANCELLED')">Cancelled</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="Student.filterTransactions('CREATED')">Processing</button>
+          </div>
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Owner</th>
+                  <th>Amount</th>
+                  <th>Mode</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="stTxList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 9. Complaints -->
+        <div class="tab-pane fade" id="st-tab-reports">
+          <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-1"><i class="bi bi-shield-exclamation text-danger me-2"></i>My Complaints</h5>
+            <p class="text-muted small mb-3">Discuss the issue with the owner, review the admin response, and withdraw your complaint when the matter is solved.</p>
+            <div id="stReportsList"></div>
+          </div>
+        </div>
+
+        <!-- 7. Complaint Chat -->
+        <div class="tab-pane fade" id="st-tab-chat">
+          <div class="card chat-card border-0 shadow-sm">
+            <div class="chat-header"><div class="chat-avatar"><i class="bi bi-building"></i></div><div><h5 class="fw-bold mb-1">Discuss with the Owner</h5><p class="text-muted small mb-0">Discuss your complaint privately and clearly.</p></div></div>
+            <div class="chat-controls"><label class="form-label small fw-semibold mb-1" for="studentChatReport">Conversation</label><select id="studentChatReport" class="form-select" onchange="Chat.selectReport('student')"><option value="">Choose a complaint</option></select></div>
+            <div id="studentChatMessages" class="chat-messages"><div class="chat-empty"><i class="bi bi-chat-square-text"></i><span>Choose a complaint to start or continue the discussion.</span></div></div>
+            <div class="chat-composer"><input id="studentChatInput" class="form-control" maxlength="2000" placeholder="Write a message to the owner..."><button class="btn btn-primary" type="button" onclick="Chat.send('student')" aria-label="Send message" title="Send message"><i class="bi bi-send-fill"></i></button></div>
+          </div>
+        </div>
+
+                <!-- 8. Profile -->
+        <div class="tab-pane fade" id="st-tab-profile">
+          <div class="card p-4 border-0 shadow-sm max-w-800 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0"><i class="bi bi-person-gear text-primary me-2"></i>My Profile</h5>
+              <button type="button" class="btn btn-outline-primary btn-sm" id="stProfEditBtn" onclick="Student.enterProfileEditMode()">
+                <i class="bi bi-pencil-square me-1"></i>Edit Profile
+              </button>
+            </div>
+
+            <div id="stProfileView">
+              <div class="text-center mb-3">
+                <img id="stViewPhoto" src="" alt="Profile" class="rounded-circle mb-2" style="width:90px;height:90px;object-fit:cover;display:none" onerror="this.style.display='none'">
+                <div id="stViewPhotoPlaceholder" class="bg-primary-subtle text-primary rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width:90px;height:90px;font-size:2rem;"><i class="bi bi-person-fill"></i></div>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="text-muted small">Full Name</div>
+                  <div class="fw-semibold" id="stViewFullName">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Email</div>
+                  <div class="fw-semibold" id="stViewEmail">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Phone Number</div>
+                  <div class="fw-semibold" id="stViewPhone">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">College / University</div>
+                  <div class="fw-semibold" id="stViewCollege">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Preferred Bangalore Area</div>
+                  <div class="fw-semibold" id="stViewArea">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Rating</div>
+                  <div class="fw-semibold" id="stViewRating">-</div>
+                </div>
+                <div class="col-12">
+                  <div class="text-muted small">Skills / Experience</div>
+                  <div class="fw-semibold" id="stViewSkills">-</div>
+                </div>
+                <div class="col-12">
+                  <div class="text-muted small">Short Bio</div>
+                  <div class="fw-semibold" id="stViewBio">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Emergency Contact Phone</div>
+                  <div class="fw-semibold" id="stViewEmerg">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Jobs Completed</div>
+                  <div class="fw-semibold" id="stViewJobsDone">-</div>
+                </div>
+              </div>
+            </div>
+
+            <form id="studentProfileForm" class="d-none">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Full Name</label>
+                  <input type="text" id="stProfFullName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Phone Number</label>
+                  <input type="text" id="stProfPhone" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">College / University</label>
+                  <input type="text" id="stProfCollege" class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Preferred Bangalore Area</label>
+                  <input type="text" id="stProfArea" class="form-control" placeholder="e.g. Kengeri, Koramangala">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Skills / Experience</label>
+                  <input type="text" id="stProfSkills" class="form-control" placeholder="e.g. Buffet Service, Kitchen Prep, Cleanliness">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Short Bio</label>
+                  <textarea id="stProfBio" class="form-control" rows="2" placeholder="Brief note about yourself"></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Emergency Contact Phone</label>
+                  <input type="text" id="stProfEmerg" class="form-control">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Profile Photo</label>
+                  <input type="file" id="stProfPhoto" class="form-control" accept="image/*" onchange="App.previewProfilePhoto(this,'stProfPhotoPreview')">
+                  <div id="stProfPhotoPreview" class="mt-2 d-none"><img src="" alt="Preview" class="rounded" style="max-height:80px;object-fit:cover"></div>
+                </div>
+              </div>
+                            <div class="mt-4 d-flex gap-2">
+                <button type="submit" id="stProfSubmitBtn" class="btn btn-primary-custom">
+                  <i class="bi bi-check2-circle me-2"></i>Save Changes
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="Student.exitProfileEditMode()">
+                  Cancel
+                </button>
+              </div>
+            </form>
+            <hr class="my-3">
+            <div class="text-center">
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="Auth.deleteAccount()">
+                <i class="bi bi-trash3 me-1"></i>Delete Account
+              </button>
+              <div class="text-muted small mt-1">This action cannot be undone.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 4: OWNER DASHBOARD -->
+  <!-- ========================================================================= -->
+  <div id="view-owner-dashboard" class="view-section d-none py-5">
+    <div class="container">
+      <!-- Welcome Header -->
+      <div class="dashboard-header-dark">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <span class="badge mb-2 fw-bold" style="background: rgba(255,255,255,0.15); color: white; font-size: 0.72rem;">Owner Dashboard</span>
+            <h4 class="mb-1 fw-bold" id="owWelcomeCatering">Catering Name</h4>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span id="owVerificationBadge" class="unverified-badge">Pending Verification</span>
+            </div>
+            <div class="text-white-50 small">Owner: <span id="owOwnerName">Owner</span></div>
+          </div>
+          <button class="btn btn-emerald btn-sm px-3" onclick="document.querySelector('button[data-bs-target=\'#ow-tab-create\']').click()">
+            <i class="bi bi-plus-circle me-1"></i>Post New Job
+          </button>
+        </div>
+      </div>
+
+      <div id="owUnverifiedAlert" class="alert alert-warning d-none mb-4 d-flex align-items-center">
+        <i class="bi bi-shield-exclamation fs-4 me-3 text-warning"></i>
+        <div>
+          <strong>Account Pending Verification:</strong> Your catering business is in review by administrators. You can post shifts, but students are advised of your pending status until verified.
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Total Jobs</div>
+                <div class="metric-val text-primary" id="owStatTotalJobs">0</div>
+              </div>
+              <div class="metric-icon bg-primary-subtle text-primary"><i class="bi bi-briefcase"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Active Shifts</div>
+                <div class="metric-val text-success" id="owStatActiveJobs">0</div>
+              </div>
+              <div class="metric-icon bg-success-subtle text-success"><i class="bi bi-clock-history"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Workers Hired</div>
+                <div class="metric-val text-warning" id="owStatHired">0</div>
+              </div>
+              <div class="metric-icon bg-warning-subtle text-warning"><i class="bi bi-people"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Completed Shifts</div>
+                <div class="metric-val text-info" id="owStatCompleted">0</div>
+              </div>
+              <div class="metric-icon bg-info-subtle text-info"><i class="bi bi-check2-circle"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="metric-label">Total Paid (₹)</div>
+                <div class="metric-val text-emerald-dark" id="owStatTotalPayments">₹0</div>
+              </div>
+              <div class="metric-icon bg-emerald text-success"><i class="bi bi-cash-stack"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-pills nav-pills-custom mb-4" id="ownerTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#ow-tab-jobs">
+            <i class="bi bi-card-list me-1"></i>My Catering Shifts
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ow-tab-create">
+            <i class="bi bi-plus-circle me-1"></i>Create New Job
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ow-tab-closed" onclick="Owner.loadClosedJobs()">
+            <i class="bi bi-archive me-1"></i>Closed Jobs
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ow-tab-full">
+            <i class="bi bi-people-fill me-1"></i>Fully Booked
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ow-tab-transactions">
+            <i class="bi bi-receipt me-1"></i>Transactions
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- 1. Jobs List -->
+        <div class="tab-pane fade show active" id="ow-tab-jobs">
+          <div id="owJobsList"></div>
+        </div>
+
+        <!-- 2. Create Job -->
+        <div class="tab-pane fade" id="ow-tab-create">
+          <div class="card p-4 border-0 shadow-sm max-w-800 mx-auto">
+            <h4 class="fw-bold mb-3"><i class="bi bi-plus-circle text-primary me-2"></i>Post a Catering Job</h4>
+            <form id="createJobForm">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Job Title *</label>
+                  <input type="text" id="jobTitle" class="form-control" placeholder="e.g. Evening Buffet Food Servers" required>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Work Role *</label>
+                  <select id="jobWorkType" class="form-select" required>
+                    <option value="FOOD_SERVER">Food Server</option>
+                    <option value="CATERING_HELPER">Catering Helper</option>
+                    <option value="KITCHEN_HELPER">Kitchen Helper</option>
+                    <option value="CLEANER">Cleaner</option>
+                    <option value="EVENT_HELPER">Event Helper</option>
+                    <option value="WAITER">Waiter</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">General Area *</label>
+                  <div class="input-group">
+                    <input type="text" id="jobWorkArea" class="form-control" placeholder="e.g. Kengeri, Bangalore" required>
+                    <button type="button" class="btn btn-outline-primary" onclick="Owner.captureGpsLocation()" title="Use my current GPS location">
+                      <i class="bi bi-geo-alt-fill"></i> GPS
+                    </button>
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Visible to all browsing students. Click GPS to auto-detect.</small>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Detailed Venue Address *</label>
+                  <div class="input-group">
+                    <input type="text" id="jobDetailedLocation" class="form-control" placeholder="e.g. Shubha Kalyana Mantapa, 8th Cross Kengeri" required>
+                    <button type="button" class="btn btn-outline-primary" onclick="Owner.captureGpsLocation()" title="Use my current GPS location">
+                      <i class="bi bi-geo-alt-fill"></i> GPS
+                    </button>
+                  </div>
+
+                  <small class="text-muted" style="font-size: 0.75rem;">🔒 Only revealed to students you accept. Click GPS to auto-detect.</small>
+                </div>
+                <div id="gpsCoords" class="col-12 d-none">
+                  <small class="text-success"><i class="bi bi-check-circle-fill me-1"></i><span id="gpsCoordsText"></span></small>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Shift Date *</label>
+                  <input type="date" id="jobDate" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Start Time *</label>
+                  <input type="time" id="jobStartTime" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">End Time *</label>
+                  <input type="time" id="jobEndTime" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Payment Amount (₹) *</label>
+                  <input type="number" id="jobPaymentAmount" class="form-control" placeholder="750" min="100" step="50" required>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Payment Type *</label>
+                  <select id="jobPaymentType" class="form-select" required>
+                    <option value="ON_SPOT_PAYMENT">On-Spot Payment</option>
+                    <option value="AFTER_WORK">After Work</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Workers Required *</label>
+                  <input type="number" id="jobWorkersRequired" class="form-control" placeholder="8" min="1" max="100" required>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-check form-switch p-3 bg-light rounded">
+                    <input class="form-check-input ms-0 me-3" type="checkbox" id="jobOnSpotCheckbox" checked>
+                    <label class="form-check-label fw-bold text-success" for="jobOnSpotCheckbox">
+                      <i class="bi bi-lightning-fill me-1"></i> On-Spot Payment Guaranteed (Attracts 3x more students)
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Job Description &amp; Responsibilities</label>
+                  <textarea id="jobDescription" class="form-control" rows="3" placeholder="Explain tasks, uniform requirements, meals provided..."></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Required Skills / Uniform</label>
+                  <input type="text" id="jobRequiredSkills" class="form-control" placeholder="e.g. Black shoes &amp; trousers, neat appearance">
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Contact Phone *</label>
+                  <input type="text" id="jobContactPhone" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Contact Email</label>
+                  <input type="email" id="jobContactEmail" class="form-control">
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3 mt-2">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Application Deadline Date (Optional)</label>
+                  <input type="date" class="form-control" id="jobApplyDeadlineDate">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Application Deadline Time</label>
+                  <input type="time" class="form-control" id="jobApplyDeadlineTime" value="23:59">
+                </div>
+              </div>
+              <div class="small text-muted mb-3"><i class="bi bi-info-circle me-1"></i>After this deadline, students can no longer apply. Leave blank for no deadline.</div>
+
+              <!-- GPS Location Capture -->
+              <div class="mt-4 mb-3">
+                <label class="form-label small fw-semibold"><i class="bi bi-geo-alt me-1"></i>Job Exact Location (GPS) <span class="text-danger">*</span></label>
+                <div class="small text-muted mb-2"><i class="bi bi-info-circle me-1"></i>Tap the button below to capture the exact GPS coordinates of the job location. No Google Maps API key required.</div>
+                <button type="button" id="gpsCaptureBtn" class="btn btn-outline-primary w-100 py-2 mb-2" onclick="Owner.captureGpsLocation()">
+                  <i class="bi bi-crosshair me-2"></i>Get Exact GPS Location
+                </button>
+                <div id="gpsLocationStatus" class="small text-muted mb-2"><i class="bi bi-info-circle me-1"></i>Location not captured yet. Tap the button above.</div>
+                <div id="gpsLocationInfo" class="d-none">
+                  <div class="alert alert-success py-2 mb-0">
+                    <i class="bi bi-check-circle me-1"></i><strong>Location Captured!</strong><br>
+                    <small>Lat: <span id="gpsLat"></span> | Lng: <span id="gpsLng"></span></small><br>
+                    <small id="gpsAddress" class="text-muted"></small><br>
+                    <small id="gpsAccuracy" class="text-muted"></small>
+                  </div>
+                </div>
+                <div id="gpsLocationError" class="d-none">
+                  <div class="alert alert-warning py-2 mb-0"><i class="bi bi-exclamation-triangle me-1"></i><span id="gpsErrorMsg"></span></div>
+                </div>
+                <input type="hidden" id="jobLatitude">
+                <input type="hidden" id="jobLongitude">
+                <input type="hidden" id="jobLocationAddress">
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-12">
+                  <label class="form-label small fw-semibold"><i class="bi bi-image me-1"></i>Location Photo (Optional)</label>
+                  <input type="file" id="jobLocationPhoto" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp" onchange="Owner.previewJobPhoto(this)">
+                  <div class="form-text">Upload a photo of the venue or location (JPG, PNG, GIF, WebP — max 5MB).</div>
+                  <div id="jobPhotoPreview" class="mt-2 d-none"><img src="" alt="Preview" class="rounded shadow-sm" style="max-height:120px; object-fit:cover;"></div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <button type="submit" id="createJobSubmitBtn" class="btn btn-primary-custom btn-lg w-100">
+                  <i class="bi bi-plus-circle me-2"></i>Post Catering Job
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Closed Jobs Tab -->
+        <div class="tab-pane fade" id="ow-tab-closed">
+          <div class="mb-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-archive me-2"></i>Closed Jobs</h5>
+            <small class="text-muted">Jobs that have passed their application deadline, been cancelled, or completed. Shows all student applicant information.</small>
+          </div>
+          <div id="owClosedJobsList"></div>
+        </div>
+
+        <!-- Fully Booked Jobs -->
+        <div class="tab-pane fade" id="ow-tab-full">
+          <div class="mb-3">
+            <h5 class="fw-bold mb-2"><i class="bi bi-people-fill me-2 text-warning"></i>Fully Booked Jobs</h5>
+            <p class="text-muted small mb-3">These jobs have filled all their worker positions. You can view them but cannot accept new applicants.</p>
+          </div>
+          <div id="owFullJobsList" class="row"></div>
+        </div>
+
+
+        <!-- 5. Transaction History -->
+        <div class="tab-pane fade" id="ow-tab-transactions">
+          <div class="mb-3">
+            <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>Transaction History</h5>
+            <p class="text-muted small mb-3">Complete record of all student payments for your jobs. Click a transaction to view full details.</p>
+          </div>
+          <!-- Transaction Summary Cards -->
+          <div class="row g-3 mb-4" id="owTxSummary">
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Test Revenue</div>
+                <div class="fw-bold fs-5 text-success" id="owTxRevenue">₹0</div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Successful</div>
+                <div class="fw-bold fs-5 text-primary" id="owTxSuccessCount">0</div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Failed</div>
+                <div class="fw-bold fs-5 text-danger" id="owTxFailedCount">0</div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Pending</div>
+                <div class="fw-bold fs-5 text-warning" id="owTxPendingCount">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Student</th>
+                  <th>Amount</th>
+                  <th>Mode</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="owTxList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Payments -->
+        <div class="tab-pane fade" id="ow-tab-payments">
+          <!-- Payment Summary Cards -->
+          <div class="row g-3 mb-4" id="owPaymentSummary">
+            <div class="col-sm-4">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Pending</div>
+                <div class="fw-bold fs-5 text-warning" id="owPayPending">₹0</div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Paid</div>
+                <div class="fw-bold fs-5 text-success" id="owPayPaid">₹0</div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="card border-0 shadow-sm text-center p-3">
+                <div class="small text-muted mb-1">Total</div>
+                <div class="fw-bold fs-5 text-primary" id="owPayTotal">₹0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-sm btn-primary" id="owPayFilterAll" onclick="Owner.filterPayments('ALL')">All</button>
+            <button class="btn btn-sm btn-outline-warning" id="owPayFilterPending" onclick="Owner.filterPayments('PENDING')">Pending</button>
+            <button class="btn btn-sm btn-outline-success" id="owPayFilterPaid" onclick="Owner.filterPayments('PAID')">Paid</button>
+          </div>
+
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Student</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="owPaymentsList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Student Complaints -->
+        <div class="tab-pane fade" id="ow-tab-complaints">
+          <div class="card p-4 border-0 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="fw-bold mb-1"><i class="bi bi-chat-square-text text-danger me-2"></i>Student Complaints</h5>
+                <p class="text-muted small mb-0">Review the issue, contact the student directly, and cooperate with platform administrators.</p>
+              </div>
+              <button class="btn btn-outline-primary btn-sm" type="button" onclick="Owner.loadComplaints()"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+            </div>
+            <div id="owComplaintsList"></div>
+          </div>
+        </div>
+
+        <!-- 5. Complaint Chat -->
+        <div class="tab-pane fade" id="ow-tab-chat">
+          <div class="card chat-card border-0 shadow-sm">
+            <div class="chat-header"><div class="chat-avatar chat-avatar-owner"><i class="bi bi-person"></i></div><div><h5 class="fw-bold mb-1">Discuss with Student</h5><p class="text-muted small mb-0">Discuss the payment or catering concern privately.</p></div></div>
+            <div class="chat-controls"><label class="form-label small fw-semibold mb-1" for="ownerChatReport">Conversation</label><select id="ownerChatReport" class="form-select" onchange="Chat.selectReport('owner')"><option value="">Choose a complaint</option></select></div>
+            <div id="ownerChatMessages" class="chat-messages"><div class="chat-empty"><i class="bi bi-chat-square-text"></i><span>Choose a complaint to start or continue the discussion.</span></div></div>
+            <div class="chat-composer"><input id="ownerChatInput" class="form-control" maxlength="2000" placeholder="Write a message to the student..."><button class="btn btn-primary" type="button" onclick="Chat.send('owner')" aria-label="Send message" title="Send message"><i class="bi bi-send-fill"></i></button></div>
+          </div>
+        </div>
+
+                <!-- 6. Profile -->
+        <div class="tab-pane fade" id="ow-tab-profile">
+          <div class="card p-4 border-0 shadow-sm max-w-800 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0"><i class="bi bi-building-gear text-primary me-2"></i>My Profile</h5>
+              <button type="button" class="btn btn-outline-primary btn-sm" id="owProfEditBtn" onclick="Owner.enterProfileEditMode()">
+                <i class="bi bi-pencil-square me-1"></i>Edit Profile
+              </button>
+            </div>
+
+            <div id="owProfileView">
+              <div class="text-center mb-3">
+                <img id="owViewPhoto" src="" alt="Profile" class="rounded-circle mb-2" style="width:90px;height:90px;object-fit:cover;display:none" onerror="this.style.display='none'">
+                <div id="owViewPhotoPlaceholder" class="bg-success-subtle text-success rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width:90px;height:90px;font-size:2rem;"><i class="bi bi-building"></i></div>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="text-muted small">Owner Full Name</div>
+                  <div class="fw-semibold" id="owViewFullName">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Email</div>
+                  <div class="fw-semibold" id="owViewEmail">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Personal Phone</div>
+                  <div class="fw-semibold" id="owViewPhone">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Catering Company Name</div>
+                  <div class="fw-semibold" id="owViewCateringName">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Business Phone</div>
+                  <div class="fw-semibold" id="owViewBizPhone">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Verification Status</div>
+                  <div class="fw-semibold" id="owViewVerification">-</div>
+                </div>
+                <div class="col-12">
+                  <div class="text-muted small">Business / Kitchen Address</div>
+                  <div class="fw-semibold" id="owViewAddress">-</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-muted small">Jobs Posted</div>
+                  <div class="fw-semibold" id="owViewJobsPosted">-</div>
+                </div>
+              </div>
+            </div>
+
+            <form id="ownerProfileForm" class="d-none">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Owner Full Name</label>
+                  <input type="text" id="owProfFullName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Personal Phone</label>
+                  <input type="text" id="owProfPhone" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Catering Company Name</label>
+                  <input type="text" id="owProfCateringName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Business Phone</label>
+                  <input type="text" id="owProfBizPhone" class="form-control">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Business / Kitchen Address</label>
+                  <textarea id="owProfAddress" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Profile Photo</label>
+                  <input type="file" id="owProfPhoto" class="form-control" accept="image/*" onchange="App.previewProfilePhoto(this,'owProfPhotoPreview')">
+                  <div id="owProfPhotoPreview" class="mt-2 d-none"><img src="" alt="Preview" class="rounded" style="max-height:80px;object-fit:cover"></div>
+                </div>
+              </div>
+                            <div class="mt-4 d-flex gap-2">
+                <button type="submit" id="owProfSubmitBtn" class="btn btn-primary-custom">
+                  <i class="bi bi-check2-circle me-2"></i>Save Changes
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="Owner.exitProfileEditMode()">
+                  Cancel
+                </button>
+              </div>
+            </form>
+            <hr class="my-3">
+            <div class="text-center">
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="Auth.deleteAccount()">
+                <i class="bi bi-trash3 me-1"></i>Delete Account
+              </button>
+              <div class="text-muted small mt-1">This action cannot be undone.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 5: ADMIN DASHBOARD -->
+  <!-- ========================================================================= -->
+  <div id="view-admin-dashboard" class="view-section d-none py-5">
+    <div class="container">
+      <div class="dashboard-header-dark">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge bg-danger mb-2">Platform Administration</span>
+            <h2 class="fw-bold mb-0">Admin Control Panel</h2>
+          </div>
+          <button class="btn btn-outline-light btn-sm" onclick="Admin.loadDashboard()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Stats Grid -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Total Students</div>
+            <div class="metric-val text-success" id="adStatStudents">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Total Owners</div>
+            <div class="metric-val text-primary" id="adStatOwners">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Verified Caterers</div>
+            <div class="metric-val text-emerald-dark" id="adStatVerifiedOwners">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Active Shifts</div>
+            <div class="metric-val text-info" id="adStatActiveJobs">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Completed Shifts</div>
+            <div class="metric-val text-success" id="adStatCompletedJobs">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Total Applications</div>
+            <div class="metric-val text-secondary" id="adStatApplications">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Payment Disputes</div>
+            <div class="metric-val text-danger" id="adStatDisputes">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Suspended Users</div>
+            <div class="metric-val text-warning" id="adStatSuspended">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="metric-card">
+            <div class="metric-label">Platform Payout</div>
+            <div class="metric-val" style="color: var(--color-primary)" id="adStatPayout">₹0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tabs -->
+      <ul class="nav nav-pills nav-pills-custom mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#ad-tab-owners">
+            <i class="bi bi-patch-check-fill me-1"></i>Owner Verification
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ad-tab-reports">
+            <i class="bi bi-shield-exclamation me-1"></i>Disputes &amp; Reports
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ad-tab-users">
+            <i class="bi bi-people-fill me-1"></i>User Management
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ad-tab-jobs">
+            <i class="bi bi-briefcase-fill me-1"></i>Job Moderation
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ad-tab-transactions" onclick="Admin.loadTransactions()">
+            <i class="bi bi-receipt me-1"></i>Transactions
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- 1. Owner Verification -->
+        <div class="tab-pane fade show active" id="ad-tab-owners">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Catering Name / Owner</th>
+                  <th>Phone</th>
+                  <th>Business Address</th>
+                  <th>Jobs Posted</th>
+                  <th>Status</th>
+                  <th>Verified At</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adOwnersList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. Disputes & Reports -->
+        <div class="tab-pane fade" id="ad-tab-reports">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Report Type</th>
+                  <th>Reporter</th>
+                  <th>Target User</th>
+                  <th>Description / Evidence</th>
+                  <th>Status</th>
+                  <th>Admin Remarks</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adReportsList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Users Management -->
+        <div class="tab-pane fade" id="ad-tab-users">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Organization / College</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adUsersList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Job Moderation -->
+        <div class="tab-pane fade" id="ad-tab-jobs">
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Job Title / Catering</th>
+                  <th>Role</th>
+                  <th>Area</th>
+                  <th>Date</th>
+                  <th>Pay</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adJobsList"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 5. Transactions -->
+        <div class="tab-pane fade" id="ad-tab-transactions">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>All Platform Transactions</h5>
+              <p class="text-muted small mb-0">Centralized record of all Razorpay TEST MODE payments.</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <span class="badge bg-warning text-dark fw-bold"><i class="bi bi-exclamation-triangle me-1"></i>TEST MODE</span>
+              <button class="btn btn-sm btn-outline-primary" onclick="Admin.exportTransactionsCsv()"><i class="bi bi-download me-1"></i>Export CSV</button>
+            </div>
+          </div>
+          <!-- Summary Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Total Transactions</div><div class="fw-bold fs-5 text-primary" id="adTxTotal">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Successful</div><div class="fw-bold fs-5 text-success" id="adTxSuccess">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Pending</div><div class="fw-bold fs-5 text-warning" id="adTxPending">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Failed</div><div class="fw-bold fs-5 text-danger" id="adTxFailed">0</div></div></div>
+            <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Cancelled</div><div class="fw-bold fs-5 text-secondary" id="adTxCancelled">0</div></div></div>
+            <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Test Volume</div><div class="fw-bold fs-5 text-emerald-dark">₹<span id="adTxAmount">0</span></div></div></div>
+            <div class="col-12 col-md-4"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Refunded</div><div class="fw-bold fs-5 text-info" id="adTxRefunded">0</div></div></div>
+          </div>
+          <!-- Search & Filters -->
+          <div class="card p-3 mb-3 shadow-sm border-0">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Search</label>
+                <input type="text" id="adTxSearch" class="form-control form-control-sm" placeholder="TXN ID, Payment ID, Student, Owner..." oninput="Admin.debounceLoadTransactions()">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Status</label>
+                <select id="adTxStatusFilter" class="form-select form-select-sm" onchange="Admin.loadTransactions()">
+                  <option value="ALL">All Statuses</option>
+                  <option value="SUCCESS">SUCCESS</option>
+                  <option value="CREATED">PENDING</option>
+                  <option value="FAILED">FAILED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="REFUNDED">REFUNDED</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Date Range</label>
+                <select id="adTxDateFilter" class="form-select form-select-sm" onchange="Admin.loadTransactions()">
+                  <option value="">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="7days">Last 7 Days</option>
+                  <option value="30days">Last 30 Days</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Sort</label>
+                <select id="adTxSort" class="form-select form-select-sm" onchange="Admin.loadTransactions()">
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="amount_desc">Amount High to Low</option>
+                  <option value="amount_asc">Amount Low to High</option>
+                  <option value="status">By Status</option>
+                </select>
+              </div>
+              <div class="col-md-1">
+                <label class="form-label small fw-semibold">Page</label>
+                <input type="number" id="adTxPage" class="form-control form-control-sm" value="1" min="1" onchange="Admin.loadTransactions()">
+              </div>
+            </div>
+          </div>
+          <!-- Transactions Table -->
+          <div class="custom-table table-responsive">
+            <table class="table align-middle mb-0" style="min-width: 800px;">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Student</th>
+                  <th>Owner</th>
+                  <th>Job</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adTxList"></tbody>
+            </table>
+          </div>
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="small text-muted" id="adTxPageInfo"></div>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary" onclick="Admin.prevTxPage()" id="adTxPrevBtn">← Prev</button>
+              <button class="btn btn-outline-secondary" onclick="Admin.nextTxPage()" id="adTxNextBtn">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS -->
+  <!-- ========================================================================= -->
+
+  <!-- 1. LOGIN MODAL -->
+  <div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Sign In to PartTime Job</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Quick Demo Buttons -->
+          <div class="m">
+            <!-- <div class="small text-muted fw-bold mb-1"><i class="bi bi-magic me-1 text-primary"></i>1-Click Demo Logins:</div> -->
+            <!-- <div class="d-flex flex-wrap">
+              <button type="button" class="quick-fill-btn" data-email="student.pavan@gmail.com" data-pass="Student@123">Student (Pavan)</button>
+              <button type="button" class="quick-fill-btn" data-email="owner.srilakshmi@catering.com" data-pass="Owner@123">Owner (Sri Lakshmi)</button>
+              <button type="button" class="quick-fill-btn" data-email="owner.royal@catering.com" data-pass="Owner@123">Owner (Pending)</button>
+              <button type="button" class="quick-fill-btn" data-email="admin@parttimejob.com" data-pass="Admin@123">Admin</button>
+            </div> -->
+          </div>
+
+          <form id="loginForm">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Email Address</label>
+              <input type="email" id="loginEmail" class="form-control" placeholder="name@example.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Password</label>
+              <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+            </div>
+            <div class="text-end mb-3">
+              <a href="javascript:void(0)" class="small text-primary fw-semibold" onclick="Auth.showForgotPassword()">Forgot Password?</a>
+            </div>
+            <button type="submit" id="loginSubmitBtn" class="btn btn-primary-custom w-100 py-2">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+          </form>
+
+          <div class="text-center mt-3 small">
+            Don't have an account?
+            <a href="/register.html" class="fw-bold text-primary">Register Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-key me-2 text-primary"></i>Reset Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Step 1: Enter Email -->
+          <div id="fpStep1">
+            <p class="text-muted small">Enter your email address and we'll send you a verification code to reset your password.</p>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Email Address</label>
+              <input type="email" id="fpEmail" class="form-control" placeholder="name@example.com" required>
+            </div>
+            <button type="button" id="fpSendCodeBtn" class="btn btn-primary-custom w-100 py-2" onclick="Auth.forgotPasswordSendCode()">
+              <i class="bi bi-send me-2"></i>Send Reset Code
+            </button>
+          </div>
+          <!-- Step 2: Enter OTP -->
+          <div id="fpStep2" class="d-none">
+            <p class="text-muted small">Enter the 6-digit code sent to your email.</p>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Verification Code</label>
+              <input type="tel" id="fpOtp" class="form-control text-center fw-bold" inputmode="numeric" maxlength="6" minlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit OTP" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+            </div>
+            <input type="hidden" id="fpVerificationId">
+            <button type="button" id="fpVerifyBtn" class="btn btn-primary-custom w-100 py-2" onclick="Auth.forgotPasswordVerifyOtp()">
+              <i class="bi bi-shield-check me-2"></i>Verify Code
+            </button>
+          </div>
+          <!-- Step 3: New Password -->
+          <div id="fpStep3" class="d-none">
+            <p class="text-muted small">Create a new password for your account.</p>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">New Password</label>
+              <input type="password" id="fpNewPassword" class="form-control" placeholder="At least 6 characters" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Confirm Password</label>
+              <input type="password" id="fpConfirmPassword" class="form-control" placeholder="Repeat your new password" required>
+            </div>
+            <button type="button" id="fpResetBtn" class="btn btn-success w-100 py-2" onclick="Auth.forgotPasswordReset()">
+              <i class="bi bi-check-circle me-2"></i>Reset Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. REGISTER MODAL -->
+  <div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Create Account on PartTime Job</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="registerForm">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">I want to register as:</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="registerRole" id="roleRadioStudent" value="ROLE_STUDENT" checked>
+                  <label class="form-check-label fw-bold text-primary" for="roleRadioStudent">
+                    <i class="bi bi-mortarboard me-1"></i>Student (Looking for Work)
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="registerRole" id="roleRadioOwner" value="ROLE_OWNER">
+                  <label class="form-check-label fw-bold text-success" for="roleRadioOwner">
+                    <i class="bi bi-building me-1"></i>Catering Owner (Hiring Staff)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Full Name *</label>
+                <input type="text" id="regFullName" class="form-control" placeholder="e.g. Ramesh Kumar" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Email Address *</label>
+                <input type="email" id="regEmail" class="form-control" placeholder="name@example.com" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Phone Number *</label>
+                <input type="text" id="regPhone" class="form-control" placeholder="+91 98XXXXXXXX" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Password *</label>
+                <input type="password" id="regPassword" class="form-control" placeholder="At least 6 characters" required>
+              </div>
+            </div>
+
+            <div class="mt-3 p-3 bg-light rounded border">
+              <div class="small fw-semibold"><i class="bi bi-envelope me-1"></i>Email verification</div>
+              <div class="small text-muted mt-1">After submitting, we will send a 6-digit verification code to your email.</div>
+              <div id="regOtpGroup" class="row g-2 mt-1 d-none">
+                <div class="col-md-6"><input type="tel" id="regOtp" class="form-control text-center fw-bold" inputmode="numeric" autocomplete="one-time-code" size="6" maxlength="6" minlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit OTP" aria-label="Six-digit email OTP" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)"></div>
+                <div class="col-md-3"><button type="button" id="verifyEmailBtn" class="btn btn-success w-100" onclick="Auth.handleVerifyEmail()"><i class="bi bi-shield-check me-1"></i>Verify Email</button></div>
+                <div class="col-md-3"><button type="button" id="resendOtpBtn" class="btn btn-outline-secondary w-100 d-none" onclick="Auth.resendOtp()">Resend OTP</button><div id="otpCooldownTimer" class="text-center text-muted small fw-semibold py-2 d-none"></div></div>
+              </div>
+              <input type="hidden" id="regVerificationId">
+              <input type="hidden" id="regEmailVerified">
+            </div>
+
+            <!-- Dynamic Student Fields -->
+            <div id="studentRegisterFields" class="row g-3 mt-1">
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Preferred Area</label>
+                <input type="text" id="regPrefArea" class="form-control" placeholder="e.g. Kengeri, Koramangala">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold d-block">Select Your Skills</label>
+                <div class="row g-2" id="regSkills">
+                  <div class="col-sm-6 col-lg-4"><label class="form-check"><input class="form-check-input reg-skill" type="checkbox" value="Food Service"><span class="form-check-label">Food Service</span></label></div>
+                  <div class="col-sm-6 col-lg-4"><label class="form-check"><input class="form-check-input reg-skill" type="checkbox" value="Kitchen Helper"><span class="form-check-label">Kitchen Helper</span></label></div>
+                  <div class="col-sm-6 col-lg-4"><label class="form-check"><input class="form-check-input reg-skill" type="checkbox" value="Event Helper"><span class="form-check-label">Event Helper</span></label></div>
+                  <div class="col-sm-6 col-lg-4"><label class="form-check"><input class="form-check-input reg-skill" type="checkbox" value="Cleaning"><span class="form-check-label">Cleaning</span></label></div>
+                  <div class="col-sm-6 col-lg-4"><label class="form-check"><input class="form-check-input reg-skill" type="checkbox" value="Cashier"><span class="form-check-label">Cashier</span></label></div>
+                  <div class="col-sm-6 col-lg-4"><label class="form-check"><input class="form-check-input reg-skill" type="checkbox" value="Dishwashing"><span class="form-check-label">Dishwashing</span></label></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Owner Fields -->
+            <div id="ownerRegisterFields" class="row g-3 mt-1 d-none">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Catering Business Name *</label>
+                <input type="text" id="regCateringName" class="form-control" placeholder="e.g. Sri Lakshmi Catering Services">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Business Phone</label>
+                <input type="text" id="regBusinessPhone" class="form-control" placeholder="+91 98XXXXXXXX">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Business Address</label>
+                <textarea id="regBusinessAddress" class="form-control" rows="2" placeholder="e.g. 124, 8th Main, Kengeri, Bangalore"></textarea>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button type="submit" id="registerSubmitBtn" class="btn btn-primary-custom w-100 py-2">
+                <i class="bi bi-person-check me-2"></i>Create Account
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. JOB DETAILS MODAL -->
+  <div class="modal fade" id="jobDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" id="jobDetailsModalContent">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. APPLY JOB MODAL -->
+  <div class="modal fade" id="applyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Apply for Shift</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form onsubmit="App.handleApplySubmit(event)">
+            <input type="hidden" id="applyJobId">
+            <div class="p-3 rounded mb-3" style="background: var(--color-surface-sunken);">
+              <h6 class="fw-bold mb-1" id="applyJobTitle">Job Title</h6>
+              <div class="text-success fw-bold" id="applyJobAmount">₹0</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Note to Organizer (Optional)</label>
+              <textarea id="applyNotes" class="form-control" rows="3" placeholder="e.g. Available on time, live nearby, possess required attire..."></textarea>
+            </div>
+            <button type="submit" id="applySubmitBtn" class="btn btn-primary-custom w-100 py-2">
+              <i class="bi bi-send-check me-2"></i>Submit Application
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. APPLICANTS MANAGER MODAL (OWNER) -->
+  <div class="modal fade" id="applicantsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h5 class="modal-title fw-bold">Applicants for: <span id="applicantsJobTitle" class="text-primary"></span></h5>
+            <small class="text-muted">Accept applicants within required worker limits, mark shift attendance, and update payments.</small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="applicantsListContent">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CONFIRM PAYMENT MODAL -->
+  <div class="modal fade" id="confirmPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-success"><i class="bi bi-cash-stack me-2"></i>Confirm Payment Receipt</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="confirmPaymentForm">
+            <input type="hidden" id="confirmPayAppId">
+            <div class="p-3 rounded mb-3" style="background: var(--color-surface-sunken);">
+              <div class="fw-bold" id="confirmPayJobTitle">Job</div>
+              <div class="fs-4 fw-bold text-success mt-1" id="confirmPayAmount">₹0</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Confirmation Notes (Optional)</label>
+              <input type="text" id="confirmPayNotes" class="form-control" placeholder="e.g. Received full amount via cash/UPI on-spot">
+            </div>
+            <button type="submit" id="confirmPaySubmitBtn" class="btn btn-emerald w-100 py-2">
+              <i class="bi bi-check-circle me-2"></i>Confirm Receipt
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. DISPUTE / COMPLAINT MODAL -->
+  <div class="modal fade" id="disputeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-danger"><i class="bi bi-shield-fill-exclamation me-2"></i>Report Payment Problem / Dispute</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="disputeForm">
+            <input type="hidden" id="disputeJobId">
+            <input type="hidden" id="disputeAppId">
+            <div class="p-2 bg-danger-subtle text-danger rounded mb-3 small fw-semibold">
+              Job: <span id="disputeJobTitle"></span>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Complaint Type *</label>
+              <select id="disputeTypeSelect" class="form-select" onchange="App.toggleComplaintAmounts(this.value)" required>
+                <option value="PAYMENT_NOT_RECEIVED">Payment Not Received</option>
+                <option value="PAYMENT_PARTIALLY_RECEIVED">Payment Partially Received</option>
+                <option value="OWNER_BEHAVIOUR">Owner Misbehavior / Harassment</option>
+                <option value="FAKE_JOB">Fake / Misleading Job</option>
+                <option value="WRONG_LOCATION">Incorrect / Wrong Location</option>
+                <option value="OTHER">Other Issue</option>
+              </select>
+            </div>
+
+            <div class="row g-2 mb-3" id="disputeAmountsRow">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Expected Amount (₹)</label>
+                <input type="number" id="disputeExpectedAmount" class="form-control">
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Received Amount (₹)</label>
+                <input type="number" id="disputeReceivedAmount" class="form-control" value="0">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Detailed Description of Problem *</label>
+              <textarea id="disputeDescription" class="form-control" rows="3" placeholder="Provide accurate details for admin review..." required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Evidence / Notes (Optional)</label>
+              <input type="text" id="disputeEvidence" class="form-control" placeholder="e.g. Chat screenshot note or witness details">
+            </div>
+
+            <button type="submit" id="disputeSubmitBtn" class="btn btn-danger w-100 py-2">
+              <i class="bi bi-shield-fill-exclamation me-2"></i>File Complaint
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. RESOLVE DISPUTE MODAL (ADMIN) -->
+  <div class="modal fade" id="resolveReportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Resolve Dispute / Complaint</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="resolveReportForm">
+            <input type="hidden" id="resolveReportId">
+            <div class="mb-3">
+              <div class="small text-muted">Issue:</div>
+              <h6 class="fw-bold" id="resolveReportTitle"></h6>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Resolution Outcome *</label>
+              <select id="resolveStatusSelect" class="form-select" required>
+                <option value="RESOLVED">RESOLVED (Action taken / settled)</option>
+                <option value="DISMISSED">DISMISSED (Invalid / Unsubstantiated)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Official Admin Remarks *</label>
+              <textarea id="resolveAdminRemarks" class="form-control" rows="3" placeholder="Enter findings and action taken..." required></textarea>
+            </div>
+            <button type="submit" id="resolveReportSubmitBtn" class="btn btn-primary-custom w-100 py-2">
+              <i class="bi bi-check2-circle me-2"></i>Submit Resolution
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 9. RAZORPAY PAY NOW MODAL -->
+  <div class="modal fade" id="razorpayPayModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-credit-card me-2 text-primary"></i>Pay with Razorpay</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="p-3 rounded mb-3" style="background: var(--color-surface-sunken);">
+            <div class="fw-bold" id="rpPayJobTitle">Job Title</div>
+            <div class="small text-muted" id="rpPayOwner">Owner</div>
+            <div class="fs-3 fw-bold text-primary mt-1" id="rpPayAmount">₹0</div>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded" style="background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2);">
+            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+            <small class="fw-semibold text-warning">TEST MODE — No real money will be charged</small>
+          </div>
+          <div id="rpPayStatus" class="text-center py-3" style="display:none;">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <div class="small text-muted">Processing payment...</div>
+          </div>
+          <button type="button" id="rpPayNowBtn" class="btn btn-primary-custom w-100 py-2" onclick="Student.initiateRazorpayPayment()">
+            <i class="bi bi-lock-fill me-2"></i>Pay Now
+          </button>
+          <input type="hidden" id="rpPayRecordId">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. PAYMENT SUCCESS MODAL -->
+  <div class="modal fade" id="razorpaySuccessModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-body text-center py-5">
+          <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i></div>
+          <h5 class="fw-bold text-success">Payment Successful!</h5>
+          <p class="text-muted mb-2">Your payment has been verified and confirmed.</p>
+          <div class="d-flex align-items-center justify-content-center gap-2 mb-3 p-2 rounded" style="background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2);">
+            <i class="bi bi-info-circle-fill text-warning"></i>
+            <small class="fw-semibold text-warning">TEST MODE — No real money transferred</small>
+          </div>
+          <div class="small text-muted mb-3" id="rpSuccessDetails"></div>
+          <button type="button" class="btn btn-primary-custom px-4" data-bs-dismiss="modal">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 11. TRANSACTION DETAIL MODAL -->
+  <div class="modal fade" id="txDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Transaction Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="txDetailBody">
+          <div class="text-center py-4"><span class="spinner-border text-primary"></span><div class="small text-muted mt-2">Loading transaction...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container toast-container-custom" id="toastContainer"></div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a class="text-center text-decoration-none" href="javascript:void(0)" onclick="App.openRoleDashboard()" style="color: var(--text-muted);">
+      <i class="bi bi-house-door fs-5 d-block"></i>
+      <small>Home</small>
+    </a>
+    <a class="text-center text-decoration-none" href="javascript:void(0)" onclick="App.navigate('jobs')" style="color: var(--text-muted);">
+      <i class="bi bi-search fs-5 d-block"></i>
+      <small>Find Jobs</small>
+    </a>
+    <a class="text-center text-decoration-none position-relative" href="javascript:void(0)" onclick="App.openSettingsSection('profile')" style="color: var(--text-muted);">
+      <i class="bi bi-person-circle fs-5 d-block"></i>
+      <small>Profile</small>
+    </a>
+  </nav>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <!-- Main Footer -->
+      <div class="row g-4 g-lg-5 py-5">
+        <!-- Column 1: Brand -->
+        <div class="col-lg-5">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 40px; height: 40px; background: var(--color-action); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                  <i class="bi bi-briefcase-fill" style="color: white; font-size: 1.1rem;"></i>
+                </div>
+                <span style="font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.02em;">Part<span style="color: var(--color-action);">Time</span></span>
+              </div>
+            </div>
+          </div>
+          <p class="footer-desc mb-0">
+            Find flexible part-time jobs and connect with the right opportunities.
+          </p>
+        </div>
+
+        <!-- Column 2: Quick Links -->
+        <div class="col-lg-3 col-md-4">
+          <h6 class="footer-heading">Quick Links</h6>
+          <ul class="footer-links">
+            <li><a href="javascript:void(0)" onclick="App.navigate('home')">Home</a></li>
+            <li><a href="javascript:void(0)" onclick="App.navigate('jobs')">Find Jobs</a></li>
+            <li><a href="javascript:void(0)" onclick="App.goToSection('how-it-works')">About Us</a></li>
+            <li><a href="javascript:void(0)" onclick="App.goToSection('faq-section')">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Support -->
+        <div class="col-lg-3 col-md-4">
+          <h6 class="footer-heading">Support</h6>
+          <ul class="footer-links">
+            <li><a href="javascript:void(0)" onclick="App.goToSection('how-it-works')">Help &amp; Support</a></li>
+            <li><a href="javascript:void(0)" onclick="App.goToSection('safety-section')">Privacy Policy</a></li>
+            <li><a href="javascript:void(0)" onclick="App.goToSection('faq-section')">Terms &amp; Conditions</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Founders Section -->
+      <div class="footer-founders">
+        <div class="footer-founders-label">Built By</div>
+        <div class="footer-founders-names">Pavan C K &amp; Nirbhay Patil</div>
+      </div>
+
+      <!-- Copyright -->
+      <hr class="footer-divider">
+      <div class="footer-copyright">
+        <span>&copy; 2026 PartTime Job Platform.</span>
+        <span>All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application JS Modules -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/student.js"></script>
+  <script src="/js/owner.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

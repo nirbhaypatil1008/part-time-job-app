@@ -1,0 +1,20 @@
+# Build output
+target/
+
+# Local Node dependencies
+node_modules/
+
+# Local environment and logs
+.env
+.env.local
+.env.*.local
+*.log
+npm-debug.log*
+
+# Runtime database files
+data/
+/uploads/
+/npm start
+
+# IDE metadata
+.vscode/*.log

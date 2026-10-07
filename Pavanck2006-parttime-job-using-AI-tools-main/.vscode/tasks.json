@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run PartTime Job Platform (H2)",
+            "type": "shell",
+            "command": "mvn",
+            "args": [
+                "spring-boot:run",
+                "-Dspring-boot.run.profiles=h2"
+            ],
+            "isBackground": true,
+            "problemMatcher": []
+        }
+    ]
+}
