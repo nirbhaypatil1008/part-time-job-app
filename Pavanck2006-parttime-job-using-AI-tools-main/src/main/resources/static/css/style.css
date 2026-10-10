@@ -1839,24 +1839,6 @@ body { top: 0 !important; }
   color: var(--color-warning) !important;
 }
 
-/* ── TRANSACTION HISTORY STYLES ──────────────────────────────────────────── */
-#st-tab-transactions table,
-#ow-tab-transactions table {
-  min-width: 600px;
-}
-#st-tab-transactions .card,
-#ow-tab-transactions .card {
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-#st-tab-transactions .card:hover,
-#ow-tab-transactions .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.tx-status-badge {
-  white-space: nowrap;
-}
-
 /* ══════════════════════════════════════════════════════════════════════════════
    COMPREHENSIVE RESPONSIVE DESIGN
    Breakpoints: 480px → 768px → 1024px → 1200px

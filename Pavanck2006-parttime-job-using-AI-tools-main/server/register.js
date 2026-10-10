@@ -340,7 +340,7 @@ async function completeRegistration(registrationToken) {
 
     // Generate JWT token
     const jwt = require('jsonwebtoken');
-    const SECRET = process.env.JWT_SECRET || 'development-secret-change-me';
+    const SECRET = process.env.JWT_SECRET;
     const jwtToken = jwt.sign({ id: result.id, role: result.role }, SECRET, { expiresIn: '7d' });
 
     return {

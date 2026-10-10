@@ -9,7 +9,7 @@
   <!-- Bootstrap 5 CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
+
   <!-- Custom Modern Design System -->
   <link rel="stylesheet" href="/css/style.css">
 
@@ -123,7 +123,7 @@
       var q = (list.previousElementSibling?.value || '').toLowerCase();
       var filtered = LANGUAGES.filter(l => !q || l.name.toLowerCase().includes(q) || l.native.toLowerCase().includes(q));
       list.innerHTML = filtered.map(l =>
-        '<div class="lang-option' + (l.code === currentLang ? ' active' : '') + '" onclick="selectLanguage('' + l.code + '', this.closest('.lang-selector'))">' +
+        `<div class="lang-option${l.code === currentLang ? ' active' : ''}" onclick="selectLanguage('${l.code}', this.closest('.lang-selector'))">` +
         '<span class="lang-flag">' + l.flag + '</span>' +
         '<span class="lang-name">' + l.name + '<small>' + l.native + '</small></span>' +
         '</div>'
@@ -134,7 +134,7 @@
       var q = query.toLowerCase();
       var filtered = LANGUAGES.filter(l => l.name.toLowerCase().includes(q) || l.native.toLowerCase().includes(q));
       list.innerHTML = filtered.map(l =>
-        '<div class="lang-option' + (l.code === currentLang ? ' active' : '') + '" onclick="selectLanguage('' + l.code + '', this.closest('.lang-selector'))">' +
+        `<div class="lang-option${l.code === currentLang ? ' active' : ''}" onclick="selectLanguage('${l.code}', this.closest('.lang-selector'))">` +
         '<span class="lang-flag">' + l.flag + '</span>' +
         '<span class="lang-name">' + l.name + '<small>' + l.native + '</small></span>' +
         '</div>'
@@ -787,11 +787,6 @@
             <i class="bi bi-trash me-1"></i>Deletion Requests
           </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#st-tab-transactions">
-            <i class="bi bi-receipt me-1"></i>Transactions
-          </button>
-        </li>
       </ul>
 
       <!-- Tab Contents -->
@@ -893,65 +888,6 @@
           </div>
         </div>
 
-
-        <!-- 8. Transaction History -->
-        <div class="tab-pane fade" id="st-tab-transactions">
-          <div class="mb-3">
-            <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>Transaction History</h5>
-            <p class="text-muted small mb-3">Complete record of all your online and on-spot payments. Click a transaction to view full details.</p>
-          </div>
-          <!-- Transaction Summary Cards -->
-          <div class="row g-3 mb-4" id="stTxSummary">
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Total Paid</div>
-                <div class="fw-bold fs-5 text-success" id="stTxPaidCount">0</div>
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Failed</div>
-                <div class="fw-bold fs-5 text-danger" id="stTxFailedCount">0</div>
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Cancelled</div>
-                <div class="fw-bold fs-5 text-warning" id="stTxCancelledCount">0</div>
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Total Amount</div>
-                <div class="fw-bold fs-5 text-primary" id="stTxTotalAmount">₹0</div>
-              </div>
-            </div>
-          </div>
-          <!-- Filter Buttons -->
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <button class="btn btn-sm btn-primary" onclick="Student.filterTransactions('ALL')">All</button>
-            <button class="btn btn-sm btn-outline-success" onclick="Student.filterTransactions('SUCCESS')">Paid</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="Student.filterTransactions('FAILED')">Failed</button>
-            <button class="btn btn-sm btn-outline-warning" onclick="Student.filterTransactions('CANCELLED')">Cancelled</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="Student.filterTransactions('CREATED')">Processing</button>
-          </div>
-          <div class="custom-table table-responsive">
-            <table class="table align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Job</th>
-                  <th>Owner</th>
-                  <th>Amount</th>
-                  <th>Mode</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="stTxList"></tbody>
-            </table>
-          </div>
-        </div>
 
         <!-- 9. Complaints -->
         <div class="tab-pane fade" id="st-tab-reports">
@@ -1203,11 +1139,6 @@
             <i class="bi bi-people-fill me-1"></i>Fully Booked
           </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ow-tab-transactions">
-            <i class="bi bi-receipt me-1"></i>Transactions
-          </button>
-        </li>
       </ul>
 
       <div class="tab-content">
@@ -1402,57 +1333,6 @@
           <div id="owFullJobsList" class="row"></div>
         </div>
 
-
-        <!-- 5. Transaction History -->
-        <div class="tab-pane fade" id="ow-tab-transactions">
-          <div class="mb-3">
-            <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>Transaction History</h5>
-            <p class="text-muted small mb-3">Complete record of all student payments for your jobs. Click a transaction to view full details.</p>
-          </div>
-          <!-- Transaction Summary Cards -->
-          <div class="row g-3 mb-4" id="owTxSummary">
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Test Revenue</div>
-                <div class="fw-bold fs-5 text-success" id="owTxRevenue">₹0</div>
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Successful</div>
-                <div class="fw-bold fs-5 text-primary" id="owTxSuccessCount">0</div>
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Failed</div>
-                <div class="fw-bold fs-5 text-danger" id="owTxFailedCount">0</div>
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <div class="card border-0 shadow-sm text-center p-3">
-                <div class="small text-muted mb-1">Pending</div>
-                <div class="fw-bold fs-5 text-warning" id="owTxPendingCount">0</div>
-              </div>
-            </div>
-          </div>
-          <div class="custom-table table-responsive">
-            <table class="table align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Job</th>
-                  <th>Student</th>
-                  <th>Amount</th>
-                  <th>Mode</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="owTxList"></tbody>
-            </table>
-          </div>
-        </div>
 
         <!-- 4. Payments -->
         <div class="tab-pane fade" id="ow-tab-payments">
@@ -1723,11 +1603,6 @@
             <i class="bi bi-briefcase-fill me-1"></i>Job Moderation
           </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#ad-tab-transactions" onclick="Admin.loadTransactions()">
-            <i class="bi bi-receipt me-1"></i>Transactions
-          </button>
-        </li>
       </ul>
 
       <div class="tab-content">
@@ -1811,97 +1686,12 @@
           </div>
         </div>
 
-        <!-- 5. Transactions -->
-        <div class="tab-pane fade" id="ad-tab-transactions">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>All Platform Transactions</h5>
-              <p class="text-muted small mb-0">Centralized record of all Razorpay TEST MODE payments.</p>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-              <span class="badge bg-warning text-dark fw-bold"><i class="bi bi-exclamation-triangle me-1"></i>TEST MODE</span>
-              <button class="btn btn-sm btn-outline-primary" onclick="Admin.exportTransactionsCsv()"><i class="bi bi-download me-1"></i>Export CSV</button>
-            </div>
-          </div>
-          <!-- Summary Cards -->
-          <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Total Transactions</div><div class="fw-bold fs-5 text-primary" id="adTxTotal">0</div></div></div>
-            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Successful</div><div class="fw-bold fs-5 text-success" id="adTxSuccess">0</div></div></div>
-            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Pending</div><div class="fw-bold fs-5 text-warning" id="adTxPending">0</div></div></div>
-            <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Failed</div><div class="fw-bold fs-5 text-danger" id="adTxFailed">0</div></div></div>
-            <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Cancelled</div><div class="fw-bold fs-5 text-secondary" id="adTxCancelled">0</div></div></div>
-            <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Test Volume</div><div class="fw-bold fs-5 text-emerald-dark">₹<span id="adTxAmount">0</span></div></div></div>
-            <div class="col-12 col-md-4"><div class="card border-0 shadow-sm text-center p-3"><div class="small text-muted mb-1">Refunded</div><div class="fw-bold fs-5 text-info" id="adTxRefunded">0</div></div></div>
-          </div>
-          <!-- Search & Filters -->
-          <div class="card p-3 mb-3 shadow-sm border-0">
-            <div class="row g-2 align-items-end">
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">Search</label>
-                <input type="text" id="adTxSearch" class="form-control form-control-sm" placeholder="TXN ID, Payment ID, Student, Owner..." oninput="Admin.debounceLoadTransactions()">
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small fw-semibold">Status</label>
-                <select id="adTxStatusFilter" class="form-select form-select-sm" onchange="Admin.loadTransactions()">
-                  <option value="ALL">All Statuses</option>
-                  <option value="SUCCESS">SUCCESS</option>
-                  <option value="CREATED">PENDING</option>
-                  <option value="FAILED">FAILED</option>
-                  <option value="CANCELLED">CANCELLED</option>
-                  <option value="REFUNDED">REFUNDED</option>
-                </select>
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small fw-semibold">Date Range</label>
-                <select id="adTxDateFilter" class="form-select form-select-sm" onchange="Admin.loadTransactions()">
-                  <option value="">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="7days">Last 7 Days</option>
-                  <option value="30days">Last 30 Days</option>
-                </select>
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small fw-semibold">Sort</label>
-                <select id="adTxSort" class="form-select form-select-sm" onchange="Admin.loadTransactions()">
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="amount_desc">Amount High to Low</option>
-                  <option value="amount_asc">Amount Low to High</option>
-                  <option value="status">By Status</option>
-                </select>
-              </div>
-              <div class="col-md-1">
-                <label class="form-label small fw-semibold">Page</label>
-                <input type="number" id="adTxPage" class="form-control form-control-sm" value="1" min="1" onchange="Admin.loadTransactions()">
-              </div>
-            </div>
-          </div>
-          <!-- Transactions Table -->
-          <div class="custom-table table-responsive">
-            <table class="table align-middle mb-0" style="min-width: 800px;">
-              <thead>
-                <tr>
-                  <th>Transaction ID</th>
-                  <th>Student</th>
-                  <th>Owner</th>
-                  <th>Job</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="adTxList"></tbody>
-            </table>
-          </div>
-          <!-- Pagination -->
-          <div class="d-flex justify-content-between align-items-center mt-3">
-            <div class="small text-muted" id="adTxPageInfo"></div>
-            <div class="btn-group btn-group-sm">
-              <button class="btn btn-outline-secondary" onclick="Admin.prevTxPage()" id="adTxPrevBtn">← Prev</button>
-              <button class="btn btn-outline-secondary" onclick="Admin.nextTxPage()" id="adTxNextBtn">Next →</button>
-            </div>
-          </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
         </div>
       </div>
     </div>
@@ -2291,72 +2081,6 @@
   </div>
 
 
-  <!-- 9. RAZORPAY PAY NOW MODAL -->
-  <div class="modal fade" id="razorpayPayModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold"><i class="bi bi-credit-card me-2 text-primary"></i>Pay with Razorpay</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="p-3 rounded mb-3" style="background: var(--color-surface-sunken);">
-            <div class="fw-bold" id="rpPayJobTitle">Job Title</div>
-            <div class="small text-muted" id="rpPayOwner">Owner</div>
-            <div class="fs-3 fw-bold text-primary mt-1" id="rpPayAmount">₹0</div>
-          </div>
-          <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded" style="background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2);">
-            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-            <small class="fw-semibold text-warning">TEST MODE — No real money will be charged</small>
-          </div>
-          <div id="rpPayStatus" class="text-center py-3" style="display:none;">
-            <div class="spinner-border text-primary mb-2" role="status"></div>
-            <div class="small text-muted">Processing payment...</div>
-          </div>
-          <button type="button" id="rpPayNowBtn" class="btn btn-primary-custom w-100 py-2" onclick="Student.initiateRazorpayPayment()">
-            <i class="bi bi-lock-fill me-2"></i>Pay Now
-          </button>
-          <input type="hidden" id="rpPayRecordId">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 10. PAYMENT SUCCESS MODAL -->
-  <div class="modal fade" id="razorpaySuccessModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg">
-        <div class="modal-body text-center py-5">
-          <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i></div>
-          <h5 class="fw-bold text-success">Payment Successful!</h5>
-          <p class="text-muted mb-2">Your payment has been verified and confirmed.</p>
-          <div class="d-flex align-items-center justify-content-center gap-2 mb-3 p-2 rounded" style="background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2);">
-            <i class="bi bi-info-circle-fill text-warning"></i>
-            <small class="fw-semibold text-warning">TEST MODE — No real money transferred</small>
-          </div>
-          <div class="small text-muted mb-3" id="rpSuccessDetails"></div>
-          <button type="button" class="btn btn-primary-custom px-4" data-bs-dismiss="modal">Done</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- 11. TRANSACTION DETAIL MODAL -->
-  <div class="modal fade" id="txDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0 shadow-lg">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Transaction Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body" id="txDetailBody">
-          <div class="text-center py-4"><span class="spinner-border text-primary"></span><div class="small text-muted mt-2">Loading transaction...</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- TOAST CONTAINER -->
   <div class="toast-container toast-container-custom" id="toastContainer"></div>
 
@@ -2377,7 +2101,6 @@
       <small>Profile</small>
     </a>
   </nav>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Footer -->

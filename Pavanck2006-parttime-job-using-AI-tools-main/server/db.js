@@ -1,13 +1,5 @@
-const {MongoClient} = require('mongodb');
-
-const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/parttimejob_db?replicaSet=rs0';
-const client = new MongoClient(uri);
-let database;
-
-function collection(name) {
-  if (!database) throw new Error('MongoDB has not been initialized');
-  return database.collection(name);
-}
+const mongoose = require('mongoose');
+const {models, relations, modelFor} = require('./models');
 
 function toId(value) {
   const id = Number(value);
@@ -17,28 +9,133 @@ function toId(value) {
   return id;
 }
 
+function requireConnection() {
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB has not been initialized');
+  }
+}
+
+function applyQueryOptions(query, options = {}) {
+  if (options.sort) query.sort(options.sort);
+  if (options.skip) query.skip(options.skip);
+  if (options.limit) query.limit(options.limit);
+  if (options.session) query.session(options.session);
+  return query;
+}
+
+function collection(name) {
+  requireConnection();
+  const Model = modelFor(name);
+
+  return {
+    findOne(filter = {}, options = {}) {
+      const query = Model.findOne(filter, options.projection);
+      return applyQueryOptions(query, options).lean().exec();
+    },
+
+    find(filter = {}, options = {}) {
+      let query = Model.find(filter, options.projection);
+      query = applyQueryOptions(query, options);
+      return {
+        sort(value) { query = query.sort(value); return this; },
+        skip(value) { query = query.skip(value); return this; },
+        limit(value) { query = query.limit(value); return this; },
+        project(value) { query = query.select(value); return this; },
+        async toArray() { return query.lean().exec(); }
+      };
+    },
+
+    aggregate(pipeline = [], options = {}) {
+      const aggregate = Model.aggregate(pipeline);
+      if (options.session) aggregate.session(options.session);
+      return {toArray: () => aggregate.exec()};
+    },
+
+    countDocuments(filter = {}, options = {}) {
+      return Model.countDocuments(filter).setOptions({session: options.session}).exec();
+    },
+
+    updateOne(filter, update, options = {}) {
+      return Model.updateOne(filter, update, {
+        ...options,
+        runValidators: true,
+        setDefaultsOnInsert: true
+      }).exec();
+    },
+
+    updateMany(filter, update, options = {}) {
+      return Model.updateMany(filter, update, {
+        ...options,
+        runValidators: true,
+        setDefaultsOnInsert: true
+      }).exec();
+    },
+
+    findOneAndUpdate(filter, update, options = {}) {
+      return Model.findOneAndUpdate(filter, update, {
+        ...options,
+        runValidators: true,
+        setDefaultsOnInsert: true
+      }).lean().exec();
+    },
+
+    deleteOne(filter, options = {}) {
+      return Model.deleteOne(filter, {session: options.session}).exec();
+    },
+
+    deleteMany(filter, options = {}) {
+      return Model.deleteMany(filter, {session: options.session}).exec();
+    },
+
+    createIndex(keys, options) {
+      return Model.collection.createIndex(keys, options);
+    }
+  };
+}
+
 async function nextId(name, session) {
-  const counter = await collection('counters').findOneAndUpdate(
+  requireConnection();
+  const counter = await models.counters.findOneAndUpdate(
     {_id: name},
     {$inc: {value: 1}},
-    {upsert: true, returnDocument: 'after', session}
-  );
+    {upsert: true, returnDocument: 'after', session, setDefaultsOnInsert: true}
+  ).lean().exec();
+  if (!counter) throw new Error(`Unable to allocate an identifier for "${name}"`);
   return counter.value;
 }
 
+async function addObjectIdReferences(name, document, session) {
+  for (const [foreignKey, referenceKey, relatedCollection] of relations[name] || []) {
+    if (document[referenceKey] || document[foreignKey] == null) continue;
+    let query = modelFor(relatedCollection).findOne({id: Number(document[foreignKey])}, {_id: 1});
+    if (session) query = query.session(session);
+    const related = await query.lean().exec();
+    if (related) document[referenceKey] = related._id;
+  }
+
+  if (name === 'otp_verifications' && document.purpose === 'email_registration') {
+    let query = models.pending_registrations.findOne({token: document.email}, {_id: 1});
+    if (session) query = query.session(session);
+    const pending = await query.lean().exec();
+    if (pending) document.pending_registration_ref = pending._id;
+  }
+}
+
 async function insertDocument(name, document, session) {
+  requireConnection();
   const created = {
     ...document,
-    id: document.id || await nextId(name, session),
-    created_at: document.created_at || new Date().toISOString(),
-    updated_at: document.updated_at || new Date().toISOString()
+    id: document.id || await nextId(name, session)
   };
-  await collection(name).insertOne(created, {session});
-  return created;
+  await addObjectIdReferences(name, created, session);
+  const Model = modelFor(name);
+  const [saved] = await Model.create([created], {session});
+  return saved.toObject();
 }
 
 async function transaction(work) {
-  const session = client.startSession();
+  requireConnection();
+  const session = await mongoose.startSession();
   try {
     let result;
     await session.withTransaction(async () => {
@@ -51,73 +148,32 @@ async function transaction(work) {
 }
 
 async function initializeDatabase() {
-  if (database) return;
-  await client.connect();
-  database = client.db();
-
-  const indexes = {
-    users: [[{email: 1}, {unique: true}], [{phone: 1}, {unique: true}], [{role: 1}]],
-    student_profiles: [[{user_id: 1}, {unique: true}]],
-    owner_profiles: [[{user_id: 1}, {unique: true}]],
-    catering_jobs: [[{owner_id: 1}], [{status: 1, work_area: 1, job_date: 1}]],
-    job_applications: [[{job_id: 1, student_id: 1}, {unique: true}], [{status: 1}]],
-    payment_records: [[{application_id: 1}, {unique: true, sparse: true}], [{razorpay_order_id: 1}, {sparse: true}], [{transaction_id: 1}, {sparse: true}]],
-    reports: [[{reporter_id: 1}], [{status: 1}]],
-    notifications: [[{recipient_id: 1, created_at: -1}], [{recipient_id: 1, is_read: 1}]],
-    job_deletion_requests: [[{job_id: 1, status: 1}], [{student_id: 1, status: 1}]],
-    otp_verifications: [[{email: 1, purpose: 1, created_at: -1}]],
-    pending_registrations: [[{token: 1}, {unique: true}], [{email: 1}], [{phone: 1}]],
-    complaint_messages: [[{report_id: 1, created_at: 1}]],
-    audit_logs: [[{user_id: 1, created_at: -1}]]
-  };
-
-  for (const [name, definitions] of Object.entries(indexes)) {
-    for (const [keys, options] of definitions) {
-      await collection(name).createIndex(keys, options);
-    }
+  if (mongoose.connection.readyState === 1) return;
+  if (mongoose.connection.readyState === 2) {
+    await mongoose.connection.asPromise();
+    return;
   }
 
-  if (process.env.RUN_SEED !== 'false') {
-    const users = [
-      {id: 1, email: 'admin@parttimejob.com', password_hash: '$2a$10$9CarXmRbD3mKT7UJjSPSo.HJkgeFYqgNvqhAUxm5Zlp2u6ARlq61e', full_name: 'Platform Admin', phone: '9999999999', role: 'ROLE_ADMIN'},
-      {id: 2, email: 'owner.srilakshmi@catering.com', password_hash: '$2a$10$e4wlcMo/hHmpHGStKvAA2eUyfR/0fICb2vilmwRqz3oQMaFEwNs9O', full_name: 'Sri Lakshmi', phone: '9876543210', role: 'ROLE_OWNER'},
-      {id: 3, email: 'student.pavan@gmail.com', password_hash: '$2a$10$ZKJ2LAWgW3bXkAQHAv/cp.M6BjmAdmJtGXpNLw5V/iOY58RW7/HbG', full_name: 'Pavan Kumar', phone: '9123456789', role: 'ROLE_STUDENT'}
-    ].map(user => ({is_active: true, is_suspended: false, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...user}));
-
-    for (const user of users) {
-      await collection('users').updateOne({id: user.id}, {$setOnInsert: user}, {upsert: true});
-    }
-    await collection('counters').updateOne({_id: 'users'}, {$max: {value: 3}}, {upsert: true});
-    await collection('owner_profiles').updateOne(
-      {id: 1},
-      {$setOnInsert: {id: 1, user_id: 2, catering_name: 'Sri Lakshmi Catering Services', business_address: 'Koramangala, Bangalore', business_phone: '9876543210', verification_status: 'VERIFIED', total_jobs_posted: 0}},
-      {upsert: true}
-    );
-    await collection('student_profiles').updateOne(
-      {id: 1},
-      {$setOnInsert: {id: 1, user_id: 3, college_name: 'R.V. College of Engineering', preferred_area: 'Koramangala', skills: 'Guest Hospitality, Counter Assistance', bio: 'Punctual student with prior catering experience.', emergency_contact: '9999999999', total_jobs_completed: 0, rating: 5}},
-      {upsert: true}
-    );
-    await collection('counters').updateOne({_id: 'owner_profiles'}, {$max: {value: 1}}, {upsert: true});
-    await collection('counters').updateOne({_id: 'student_profiles'}, {$max: {value: 1}}, {upsert: true});
-    const verifiedOtpSeeds = [
-      {id: 1, email: users[1].email, purpose: 'email_registration'},
-      {id: 2, email: users[1].email, purpose: 'phone_registration'},
-      {id: 3, email: users[2].email, purpose: 'email_registration'},
-      {id: 4, email: users[2].email, purpose: 'phone_registration'}
-    ];
-    const seedTime = new Date().toISOString();
-    for (const otp of verifiedOtpSeeds) {
-      await collection('otp_verifications').updateOne(
-        {id: otp.id},
-        {$setOnInsert: {...otp, otp_hash: 'seed-account-verification', expires_at: seedTime, attempts: 0, max_attempts: 5, is_verified: true, is_used: true, created_at: seedTime, updated_at: seedTime}},
-        {upsert: true}
-      );
-    }
-    await collection('counters').updateOne({_id: 'otp_verifications'}, {$max: {value: 4}}, {upsert: true});
+  const uri = process.env.MONGO_URI;
+  if (!uri) throw new Error('MONGO_URI is required. Set it in the local .env file.');
+  await mongoose.connect(uri, {serverSelectionTimeoutMS: 10000});
+  for (const Model of Object.values(models)) {
+    await Model.createIndexes();
   }
-
-  console.log(`MongoDB connected to database "${database.databaseName}"`);
+  console.log(`MongoDB connected to database "${mongoose.connection.name}"`);
 }
 
-module.exports = {client, collection, insertDocument, initializeDatabase, nextId, toId, transaction};
+async function closeDatabase() {
+  if (mongoose.connection.readyState !== 0) await mongoose.disconnect();
+}
+
+module.exports = {
+  client: mongoose,
+  collection,
+  insertDocument,
+  initializeDatabase,
+  closeDatabase,
+  nextId,
+  toId,
+  transaction
+};

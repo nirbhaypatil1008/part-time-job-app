@@ -37,7 +37,7 @@ A production-grade full-stack job marketplace connecting college students with c
 |---|---|
 | **Runtime** | Node.js 18+ |
 | **Framework** | Express 4.x |
-| **Database** | MongoDB (`mongodb` Node.js driver) |
+| **Database** | MongoDB with Mongoose schemas and ObjectId references |
 | **Auth** | JWT (`jsonwebtoken`) + bcryptjs |
 | **File Uploads** | Multer (images up to 5 MB) |
 | **Email** | Nodemailer (SMTP) |
@@ -54,8 +54,12 @@ A production-grade full-stack job marketplace connecting college students with c
 parttime-job-platform-node/
 ├── server.js                    # Express app — all API routes, auth, file upload, startup
 ├── server/
-│   ├── db.js                    # MongoDB connection, indexes, and demo seed data
+│   ├── db.js                    # Mongoose connection, ID compatibility, and transactions
+│   ├── models.js                # Mongoose schemas, validation, indexes, and references
 │   └── chat.js                  # Complaint messaging routes (/api/chat)
+├── scripts/
+│   ├── seed.js                  # Explicit development/test data seeding
+│   └── migrate-mysql-to-mongodb.js # Non-destructive MySQL data importer
 ├── package.json
 ├── .env                         # Environment config (not committed)
 │
@@ -93,22 +97,23 @@ npm install
 
 ### 2. Configure environment
 
-Create a `.env` file in the project root (or copy `.env.example`):
+Copy `.env.example` to `.env` in the project root, then set the required values:
 
 ```env
-MONGODB_URI=mongodb://127.0.0.1:27017/parttimejob_db?replicaSet=rs0
-JWT_SECRET=some-random-secret-string
+MONGO_URI=mongodb://127.0.0.1:27017/parttimejob_db?replicaSet=rs0
+JWT_SECRET=<generate-a-long-random-secret>
 PORT=8080
 
 # Email OTP (required for registration and password reset)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=you@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_FROM="PartTime Job <you@gmail.com>"
+SMTP_USER=<your-smtp-account>
+SMTP_PASSWORD=<your-smtp-app-password>
+SMTP_FROM=<verified-sender-address>
+SMTP_SENDER_NAME=PartTime Job
 ```
 
-> Email OTP codes are sent only to the address being verified; they are never returned by the API or printed to the server console. If SMTP is not configured, the OTP step returns a 503 error. For local testing, use the pre-seeded accounts below.
+> Email OTP codes are sent only to the address being verified; they are never returned by the API or printed to the server console. If SMTP is not configured, the OTP step returns a 503 error. Keep `.env` private; it is excluded from Git.
 
 ### 3. Start MongoDB locally
 
@@ -124,7 +129,7 @@ In another terminal, initialize the replica set once:
 mongosh "mongodb://127.0.0.1:27017/admin" --eval "rs.initiate()"
 ```
 
-For MongoDB Atlas, set `MONGODB_URI` to the connection string for your cluster instead.
+For MongoDB Atlas, set `MONGO_URI` to your cluster URI. Use a replica set because application workflows use multi-document transactions.
 
 ### 4. Start the server
 
@@ -133,7 +138,34 @@ npm start          # production
 npm run dev        # development with --watch auto-reload
 ```
 
-The server connects to MongoDB, creates the required collections and indexes, seeds demo users/profiles when `RUN_SEED` is enabled, then listens on `http://localhost:8080`. Existing SQL data is not imported.
+The server connects to MongoDB, creates the required indexes, and listens on `http://localhost:8080`. Startup never seeds data. For development/test accounts, configure the `SEED_*` variables in `.env` and run:
+
+```bash
+npm run seed
+```
+
+Seeding is idempotent; it does not overwrite an existing account's password.
+Each seed password must be at least 12 characters.
+
+### Remove legacy gateway metadata
+
+To remove old provider IDs/signatures and their indexes from MongoDB payment records after taking a database backup, run:
+
+```bash
+npm run cleanup:gateway-data
+```
+
+This does not delete manual settlement records or the job's agreed compensation/payment method.
+
+### Import existing MySQL data
+
+The importer copies MySQL rows into MongoDB and leaves the source database unchanged. Configure `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, and `MYSQL_PASSWORD` in `.env`, then run:
+
+```bash
+npm run migrate:mysql
+```
+
+The migration requires primary keys on source tables, skips the obsolete gateway-only transaction table, removes gateway credential/signature fields, hashes legacy plaintext user passwords, and creates ObjectId reference fields while retaining numeric IDs for current API compatibility. Back up both databases first and verify the imported collections before retiring any SQL system or source data.
 
 ### 5. Open in browser
 
@@ -295,16 +327,27 @@ The app is a single `index.html` page with view-based routing handled in JavaScr
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `MONGODB_URI` | Yes | `mongodb://127.0.0.1:27017/parttimejob_db?replicaSet=rs0` | MongoDB connection string; a replica set is required for transactions |
-| `JWT_SECRET` | Yes | `development-secret-change-me` | HMAC signing key |
+| `MONGO_URI` | Yes | — | MongoDB connection string; a replica set is required for transactions |
+| `JWT_SECRET` | Yes | — | HMAC signing key; set a long, random secret |
 | `PORT` | No | `8080` | Server listen port |
-| `RUN_SEED` | No | `true` | Set `false` to skip seed data |
 | `SMTP_HOST` | For OTP | — | SMTP server hostname |
 | `SMTP_PORT` | For OTP | `587` | SMTP port |
-| `SMTP_USER` | For OTP | — | SMTP username |
-| `SMTP_PASSWORD` | For OTP | — | SMTP password |
-| `SMTP_FROM` | For OTP | — | Sender email address |
 | `SMTP_SECURE` | No | `false` | Set `true` for port 465 |
+| `SMTP_USER` | For OTP | — | SMTP username |
+| `SMTP_PASSWORD` | For OTP | — | SMTP app password/credential |
+| `SMTP_FROM` | For OTP | — | Verified sender email address |
+| `SMTP_SENDER_NAME` | No | `PartTime Job` | Display name for verification emails |
+| `GOOGLE_MAPS_API_KEY` | No | — | Optional reverse-geocoding API key |
+| `MYSQL_HOST` | For migration | `127.0.0.1` | Legacy MySQL hostname |
+| `MYSQL_PORT` | For migration | `3306` | Legacy MySQL port |
+| `MYSQL_DATABASE` | For migration | — | Legacy database to import |
+| `MYSQL_USER` | For migration | — | Legacy MySQL account |
+| `MYSQL_PASSWORD` | For migration | — | Legacy MySQL password |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_PHONE` | For seeding | — | Development/test admin credentials |
+| `SEED_OWNER_EMAIL`, `SEED_OWNER_PASSWORD`, `SEED_OWNER_PHONE` | For seeding | — | Development/test owner credentials |
+| `SEED_STUDENT_EMAIL`, `SEED_STUDENT_PASSWORD`, `SEED_STUDENT_PHONE` | For seeding | — | Development/test student credentials |
+
+Twilio variables are intentionally absent because phone OTP verification has been removed and Twilio is not used by the application.
 
 ---
 

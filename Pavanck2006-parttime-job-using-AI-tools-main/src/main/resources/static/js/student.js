@@ -17,7 +17,6 @@ const Student = {
       await this.loadPayments();
       await this.loadReports();
       await this.loadDeletionRequests();
-      await this.loadTransactions();
     } catch (err) {
       console.error('Error loading student dashboard:', err);
     }
@@ -430,7 +429,6 @@ const Student = {
         App.showToast('Request rejected. The job remains active.', 'info');
       }
       await this.loadDeletionRequests();
-      await this.loadTransactions();
       await this.loadApplications();
     } catch (err) {
       App.showToast(err.message || 'Failed to process request', 'danger');
@@ -450,9 +448,7 @@ const Student = {
         return;
       }
 
-      let rpMap = {};
-      try { const rps = await Student.loadRazorpayTransactions(); rps.forEach(t => { rpMap[t.applicationId] = t; }); } catch(e) {}
-      container.innerHTML = payments.map(pay => { const rp = rpMap[pay.applicationId] || {}; const isOnline = !!(rp.razorpayPaymentId || rp.paymentMethod); return `
+      container.innerHTML = payments.map(pay => `
         <tr>
           <td>
             <div class="fw-bold">${App.escapeHtml(pay.jobTitle)}</div>
@@ -463,21 +459,16 @@ const Student = {
             <small class="text-muted">${App.escapeHtml(pay.workArea || '')}</small>
           </td>
           <td class="fw-bold text-success">₹${pay.amount}</td>
-          <td><span class="badge bg-primary-subtle text-primary border">${pay.paymentTypeDisplayName || 'On-Spot'}</span>${isOnline ? '<br><span class="badge bg-info text-dark mt-1"><i class="bi bi-credit-card me-1"></i>Online</span>' : ''}</td>
+          <td><span class="badge bg-primary-subtle text-primary border">${App.escapeHtml(pay.paymentMethod || pay.paymentTypeDisplayName || 'On-Spot')}</span></td>
           <td>
-            ${rp.paymentStatus === 'SUCCESS' || rp.paymentStatus === 'CONFIRMED' ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Owner Paid</span>' :
-              rp.paymentStatus === 'CREATED' ? '<span class="badge bg-warning text-dark">Owner payment processing</span>' :
-              rp.paymentStatus === 'FAILED' ? '<span class="badge bg-danger">Payment failed</span>' :
-              pay.paymentStatus === 'CONFIRMED' ? '<span class="badge bg-success">Owner confirmed payment</span>' :
+            ${pay.paymentStatus === 'CONFIRMED' ? '<span class="badge bg-success">Payment confirmed</span>' :
               pay.paymentStatus === 'PAID' ? '<span class="badge bg-info">Awaiting your confirmation</span>' :
               pay.paymentStatus === 'DISPUTED' ? '<span class="badge bg-danger">Disputed</span>' :
               '<span class="badge bg-warning text-dark">Pending owner payment</span>'}
-            ${rp.razorpayPaymentId ? `<br><small class="text-muted">RP: ${rp.razorpayPaymentId.substring(0, 20)}</small>` : ''}
-            ${rp.environment ? '<br><span class="badge bg-warning-subtle text-warning border border-warning-subtle small mt-1"><i class="bi bi-info-circle me-1"></i>TEST</span>' : ''}
           </td>
           <td><small class="text-muted">${App.formatDate(pay.confirmedPaidAt || pay.markedPaidAt || pay.createdAt)}</small></td>
         </tr>
-      `}).join('');
+      `).join('');
     } catch (err) {
       container.innerHTML = `<tr><td colspan="6" class="text-center p-3 text-danger">Failed to load payment history</td></tr>`;
     }
@@ -557,263 +548,5 @@ const Student = {
     this._renderAvailableJobs(filtered);
   },
 
-  // ─── RAZORPAY PAYMENT ──────────────────────────────────────────────────
-
-  openRazorpayPayModal(paymentRecordId, jobTitle, ownerName, amount) {
-    document.getElementById('rpPayRecordId').value = paymentRecordId;
-    document.getElementById('rpPayJobTitle').textContent = jobTitle;
-    document.getElementById('rpPayOwner').textContent = ownerName;
-    document.getElementById('rpPayAmount').textContent = '\u20B9' + Number(amount).toLocaleString('en-IN');
-    document.getElementById('rpPayStatus').style.display = 'none';
-    document.getElementById('rpPayNowBtn').style.display = '';
-    document.getElementById('rpPayNowBtn').disabled = false;
-    this._rpPaying = false;
-    new bootstrap.Modal(document.getElementById('razorpayPayModal')).show();
-  },
-
-  async initiateRazorpayPaymentNew() {
-    if (this._rpPaying) return; // Prevent double-click
-    this._rpPaying = true;
-    const btn = document.getElementById('rpPayNowBtn');
-    const status = document.getElementById('rpPayStatus');
-    const recordId = document.getElementById('rpPayRecordId').value;
-    if (!recordId) { this._rpPaying = false; return; }
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating order...';
-    status.style.display = 'none';
-
-    try {
-      // 1. Create order on server (using API module)
-      const orderData = await API.student.createRazorpayOrder(Number(recordId));
-
-      // 2. Fetch Razorpay key
-      const keyRes = await fetch('/api/public/razorpay-key', {
-        headers: {'Authorization': 'Bearer ' + API.getToken()}
-      });
-      const keyJson = await keyRes.json();
-      const keyId = keyJson.data?.apiKey || keyJson.apiKey;
-      if (!keyId) throw new Error('Razorpay is not configured. Set RAZORPAY_KEY_ID.');
-
-      // 3. Open Razorpay Checkout
-      const self = this;
-      const options = {
-        key: keyId,
-        amount: orderData.amount,
-        currency: orderData.currency || 'INR',
-        name: 'PartTime Job Platform',
-        description: 'Payment for: ' + (orderData.jobTitle || 'Job'),
-        order_id: orderData.orderId,
-        handler: async function(response) {
-          status.style.display = '';
-          btn.style.display = 'none';
-          try {
-            await API.student.verifyRazorpayPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              paymentRecordId: Number(recordId)
-            });
-            bootstrap.Modal.getInstance(document.getElementById('razorpayPayModal')).hide();
-            document.getElementById('rpSuccessDetails').innerHTML =
-              '<div>Payment ID: <code>' + App.escapeHtml(response.razorpay_payment_id) + '</code></div>' +
-              '<div>Amount: <strong>\u20B9' + (orderData.amount / 100).toLocaleString('en-IN') + '</strong></div>' +
-              '<div class="mt-1"><small class="text-muted">TEST MODE \u2014 No real money transferred</small></div>';
-            new bootstrap.Modal(document.getElementById('razorpaySuccessModal')).show();
-            if (typeof Student !== 'undefined') { Student.loadAcceptedJobs(); Student.loadPayments(); }
-            App.showToast('Payment successful!', 'success');
-          } catch (e) {
-            App.showToast('Payment succeeded but verification failed: ' + e.message + '. Contact support.', 'warning');
-          }
-          self._rpPaying = false;
-        },
-        prefill: {},
-        theme: {color: '#10b981'},
-        modal: {
-          ondismiss: async function() {
-            btn.style.display = '';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Pay Now';
-            status.style.display = 'none';
-            self._rpPaying = false;
-            try { await API.student.cancelRazorpayPayment(Number(recordId)); } catch (e) {}
-          }
-        }
-      };
-
-      const rzp = new Razorpay(options);
-      rzp.on('payment.failed', function(response) {
-        App.showToast('Payment failed: ' + (response.error ? response.error.description : 'Unknown error'), 'danger');
-        btn.style.display = '';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Pay Now';
-        status.style.display = 'none';
-        self._rpPaying = false;
-      });
-      rzp.open();
-
-    } catch (e) {
-      App.showToast(e.message, 'danger');
-      btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Pay Now';
-      this._rpPaying = false;
-    }
-  },
-
-
-
-  // ─── TRANSACTION HISTORY ──────────────────────────────────────────────────
-
-  _txData: [],
-  _txFilter: 'ALL',
-
-  async loadTransactions() {
-    const container = document.getElementById('stTxList');
-    if (!container) return;
-    try {
-      container.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading transactions...</td></tr>';
-      const txns = await API.student.getRazorpayTransactions();
-      this._txData = txns || [];
-      this._renderTransactions();
-    } catch (err) {
-      container.innerHTML = '<tr><td colspan="7" class="text-center p-3 text-danger">Failed to load transactions</td></tr>';
-    }
-  },
-
-  filterTransactions(status) {
-    this._txFilter = status;
-    // Update active button
-    document.querySelectorAll('#st-tab-transactions .btn').forEach(btn => {
-      btn.classList.remove('btn-primary');
-      btn.classList.add('btn-outline-secondary');
-    });
-    event.target.classList.remove('btn-outline-secondary');
-    event.target.classList.add('btn-primary');
-    this._renderTransactions();
-  },
-
-  _renderTransactions() {
-    const container = document.getElementById('stTxList');
-    if (!container) return;
-    let data = this._txData;
-    if (this._txFilter !== 'ALL') {
-      data = data.filter(t => t.paymentStatus === this._txFilter);
-    }
-
-    // Update summary stats
-    const all = this._txData;
-    const successCount = all.filter(t => t.paymentStatus === 'SUCCESS').length;
-    const failedCount = all.filter(t => t.paymentStatus === 'FAILED').length;
-    const cancelledCount = all.filter(t => t.paymentStatus === 'CANCELLED').length;
-    const totalAmount = all.filter(t => t.paymentStatus === 'SUCCESS').reduce((s, t) => s + Number(t.amount || 0), 0);
-    const paidEl = document.getElementById('stTxPaidCount');
-    const failedEl = document.getElementById('stTxFailedCount');
-    const cancelledEl = document.getElementById('stTxCancelledCount');
-    const totalEl = document.getElementById('stTxTotalAmount');
-    if (paidEl) paidEl.textContent = successCount;
-    if (failedEl) failedEl.textContent = failedCount;
-    if (cancelledEl) cancelledEl.textContent = cancelledCount;
-    if (totalEl) totalEl.textContent = '₹' + totalAmount.toLocaleString('en-IN');
-
-    if (!data || data.length === 0) {
-      container.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">No transactions found.</td></tr>';
-      return;
-    }
-
-    container.innerHTML = data.map(tx => {
-      const isOnline = !!(tx.razorpayPaymentId || tx.paymentMethod);
-      const statusBadge = tx.paymentStatus === 'SUCCESS' ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Paid</span>' :
-        tx.paymentStatus === 'CREATED' ? '<span class="badge bg-warning text-dark">Processing</span>' :
-        tx.paymentStatus === 'FAILED' ? '<span class="badge bg-danger">Failed</span>' :
-        tx.paymentStatus === 'CANCELLED' ? '<span class="badge bg-secondary">Cancelled</span>' :
-        '<span class="badge bg-warning text-dark">Pending</span>';
-      const methodBadge = isOnline ? '<span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-credit-card me-1"></i>Online</span>' :
-        '<span class="badge bg-primary-subtle text-primary border">On-Spot</span>';
-      return `
-        <tr>
-          <td>
-            <div class="fw-bold">${App.escapeHtml(tx.jobTitle || 'Job')}</div>
-            <small class="text-muted">${App.escapeHtml(tx.workArea || '')}</small>
-          </td>
-          <td class="fw-semibold">${App.escapeHtml(tx.ownerCateringName || '')}</td>
-          <td class="fw-bold text-success">₹${tx.amount}</td>
-          <td>${methodBadge}</td>
-          <td>
-            ${statusBadge}
-            ${tx.razorpayPaymentId ? '<br><small class="text-muted">' + App.escapeHtml(tx.razorpayPaymentId.substring(0, 16)) + '...</small>' : ''}
-            ${tx.environment ? '<br><span class="badge bg-warning-subtle text-warning border border-warning-subtle small mt-1"><i class="bi bi-info-circle me-1"></i>TEST</span>' : ''}
-          </td>
-          <td><small class="text-muted">${App.formatDate(tx.createdAt)}</small></td>
-          <td><button class="btn btn-sm btn-outline-primary" onclick="Student.viewTransactionDetail(${tx.id})"><i class="bi bi-eye"></i></button></td>
-        </tr>`;
-    }).join('');
-  },
-
-  async viewTransactionDetail(txId) {
-    const body = document.getElementById('txDetailBody');
-    if (!body) return;
-    body.innerHTML = '<div class="text-center py-4"><span class="spinner-border text-primary"></span><div class="small text-muted mt-2">Loading transaction...</div></div>';
-    new bootstrap.Modal(document.getElementById('txDetailModal')).show();
-    try {
-      const tx = await API.student.getRazorpayTransaction(txId);
-      body.innerHTML = `
-        <div class="p-3 rounded mb-3" style="background: var(--color-surface-sunken);">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="fw-bold fs-5">₹${tx.amount}</div>
-              <div class="small text-muted">Payment for: ${App.escapeHtml(tx.jobTitle || 'Job')}</div>
-            </div>
-            <span class="badge ${tx.paymentStatus === 'SUCCESS' ? 'bg-success' : tx.paymentStatus === 'FAILED' ? 'bg-danger' : 'bg-warning text-dark'} fs-6">${tx.paymentStatus}</span>
-          </div>
-        </div>
-        <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded" style="background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2);">
-          <i class="bi bi-info-circle-fill text-warning"></i>
-          <small class="fw-semibold text-warning">TEST MODE — No real money transferred</small>
-        </div>
-        <div class="row g-3">
-          <div class="col-md-6">
-            <div class="small text-muted">Transaction ID</div>
-            <div class="fw-semibold">TXN-${String(tx.id).padStart(8, '0')}</div>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted">Job</div>
-            <div class="fw-semibold">${App.escapeHtml(tx.jobTitle || 'N/A')}</div>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted">Owner</div>
-            <div class="fw-semibold">${App.escapeHtml(tx.ownerCateringName || 'N/A')}</div>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted">Job Date</div>
-            <div class="fw-semibold">${App.formatDate(tx.jobDate)}</div>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted">Work Area</div>
-            <div class="fw-semibold">${App.escapeHtml(tx.workArea || 'N/A')}</div>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted">Payment Method</div>
-            <div class="fw-semibold">${App.escapeHtml(tx.paymentMethod || 'N/A')}</div>
-          </div>
-          ${tx.razorpayOrderId ? `<div class="col-md-6"><div class="small text-muted">Razorpay Order ID</div><div class="fw-semibold"><code>${App.escapeHtml(tx.razorpayOrderId)}</code></div></div>` : ''}
-          ${tx.razorpayPaymentId ? `<div class="col-md-6"><div class="small text-muted">Razorpay Payment ID</div><div class="fw-semibold"><code>${App.escapeHtml(tx.razorpayPaymentId)}</code></div></div>` : ''}
-          <div class="col-md-6">
-            <div class="small text-muted">Environment</div>
-            <div><span class="badge bg-warning-subtle text-warning border border-warning-subtle">TEST MODE</span></div>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted">Created</div>
-            <div class="fw-semibold">${App.formatDate(tx.createdAt)}</div>
-          </div>
-          ${tx.confirmedPaidAt ? `<div class="col-md-6"><div class="small text-muted">Completed</div><div class="fw-semibold">${App.formatDate(tx.confirmedPaidAt)}</div></div>` : ''}
-        </div>
-        <div class="text-center mt-4">
-          <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      `;
-    } catch (err) {
-      body.innerHTML = '<div class="text-center p-4 text-danger">Failed to load transaction details: ' + App.escapeHtml(err.message) + '</div>';
-    }
-  },
 
 };

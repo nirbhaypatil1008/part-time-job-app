@@ -9,8 +9,6 @@ const {collection, insertDocument, initializeDatabase, toId, transaction} = requ
 const otpService = require('./server/otp');
 const regService = require('./server/register');
 const chatRouter = require('./server/chat');
-const razorpayRouter = require('./server/razorpay');
-const {createOrUpdateTransaction, updateTransactionStatus, getTransactionDetails, getTransactionsList, getTransactionSummary} = require('./server/transactions');
 const multer = require('multer');
 
 // File upload config
@@ -33,7 +31,7 @@ const upload = multer({
 
 const app = express();
 const PORT = Number(process.env.PORT || 8080);
-const SECRET = process.env.JWT_SECRET || 'development-secret-change-me';
+const SECRET = process.env.JWT_SECRET;
 const staticDir = path.join(__dirname, 'src', 'main', 'resources', 'static');
 
 
@@ -52,12 +50,6 @@ const guard = (...roles) => (req, res, next) => req.user && roles.includes(req.u
 // Wire up auth before DELETE on reports
 app.use('/api/reports/:id', (req, res, next) => req.method === 'DELETE' ? auth(req, res, () => guard('ROLE_STUDENT')(req, res, next)) : next());
 app.use('/api/chat', auth, chatRouter);
-// Razorpay public key endpoint (no auth required)
-app.get('/api/public/razorpay-key', (req, res) => {
-  const keyId = process.env.RAZORPAY_KEY_ID || '';
-  ok(res, {apiKey: keyId, configured: !!keyId});
-});
-
 async function auth(req, res, next) {
   try {
     const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -338,12 +330,18 @@ async function fetchApplications(match, sort = {created_at: -1}, session) {
 function paymentPipeline(match, sort = {created_at: -1}, limit) {
   return [
     {$match: match},
-    {$lookup: {from: 'catering_jobs', localField: 'job_id', foreignField: 'id', as: 'job'}}, {$unwind: {path: '$job', preserveNullAndEmptyArrays: true}},
-    {$lookup: {from: 'student_profiles', localField: 'student_id', foreignField: 'id', as: 'student'}}, {$unwind: {path: '$student', preserveNullAndEmptyArrays: true}},
-    {$lookup: {from: 'users', localField: 'student.user_id', foreignField: 'id', as: 'student_user'}}, {$unwind: {path: '$student_user', preserveNullAndEmptyArrays: true}},
-    {$lookup: {from: 'owner_profiles', localField: 'owner_id', foreignField: 'id', as: 'owner'}}, {$unwind: {path: '$owner', preserveNullAndEmptyArrays: true}},
-    {$lookup: {from: 'users', localField: 'owner.user_id', foreignField: 'id', as: 'owner_user'}}, {$unwind: {path: '$owner_user', preserveNullAndEmptyArrays: true}},
-    {$lookup: {from: 'job_applications', localField: 'application_id', foreignField: 'id', as: 'application'}}, {$unwind: {path: '$application', preserveNullAndEmptyArrays: true}},
+    {$lookup: {from: 'catering_jobs', localField: 'job_id', foreignField: 'id', as: 'job'}},
+    {$unwind: {path: '$job', preserveNullAndEmptyArrays: true}},
+    {$lookup: {from: 'student_profiles', localField: 'student_id', foreignField: 'id', as: 'student'}},
+    {$unwind: {path: '$student', preserveNullAndEmptyArrays: true}},
+    {$lookup: {from: 'users', localField: 'student.user_id', foreignField: 'id', as: 'student_user'}},
+    {$unwind: {path: '$student_user', preserveNullAndEmptyArrays: true}},
+    {$lookup: {from: 'owner_profiles', localField: 'owner_id', foreignField: 'id', as: 'owner'}},
+    {$unwind: {path: '$owner', preserveNullAndEmptyArrays: true}},
+    {$lookup: {from: 'users', localField: 'owner.user_id', foreignField: 'id', as: 'owner_user'}},
+    {$unwind: {path: '$owner_user', preserveNullAndEmptyArrays: true}},
+    {$lookup: {from: 'job_applications', localField: 'application_id', foreignField: 'id', as: 'application'}},
+    {$unwind: {path: '$application', preserveNullAndEmptyArrays: true}},
     {$set: {
       job_title: '$job.title', work_area: '$job.work_area', work_type: '$job.work_type', job_date: '$job.job_date',
       student_name: '$student_user.full_name', student_email: '$student_user.email', student_phone: '$student_user.phone',
@@ -1353,8 +1351,7 @@ app.get('/api/student/payments', auth, guard('ROLE_STUDENT'), async (req, res, n
       amount: x.amount, paymentType: x.payment_type, paymentStatus: x.payment_status,
       jobTitle: x.job_title, workArea: x.work_area, jobDate: x.job_date,
       cateringName: x.catering_name, ownerName: x.owner_name,
-      razorpayOrderId: x.razorpay_order_id, razorpayPaymentId: x.razorpay_payment_id,
-      environment: x.environment, paymentMethod: x.payment_method,
+      paymentMethod: x.payment_method,
       createdAt: x.created_at, confirmedPaidAt: x.confirmed_paid_at
     })), 'Payments retrieved');
   } catch (e) { next(e); }
@@ -1501,160 +1498,6 @@ app.delete('/api/admin/jobs/:id', auth, guard('ROLE_ADMIN'), async (req, res, ne
   try {
     await collection('catering_jobs').updateOne({id: toId(req.params.id)}, {$set: {status: 'CANCELLED', updated_at: new Date().toISOString()}});
     ok(res, null, 'Job deleted/cancelled by admin');
-  } catch (e) { next(e); }
-});
-
-// ─── ADMIN TRANSACTIONS ──────────────────────────────────────────────────────
-
-// Get all transactions with filters, search, and pagination
-app.get('/api/admin/transactions', auth, guard('ROLE_ADMIN'), async (req, res, next) => {
-  try {
-    const filters = {
-      status: req.query.status,
-      environment: req.query.environment || 'TEST',
-      fromDate: req.query.fromDate,
-      toDate: req.query.toDate,
-      searchQuery: req.query.search,
-      limit: req.query.limit || 50,
-      offset: req.query.offset || 0
-    };
-
-    const result = await getTransactionsList(filters);
-    ok(res, result, 'Transactions retrieved');
-  } catch (e) { next(e); }
-});
-
-// Get transaction summary/statistics for admin dashboard
-app.get('/api/admin/transactions/summary', auth, guard('ROLE_ADMIN'), async (req, res, next) => {
-  try {
-    const summary = await getTransactionSummary({
-      fromDate: req.query.fromDate,
-      toDate: req.query.toDate
-    });
-    ok(res, summary, 'Transaction summary retrieved');
-  } catch (e) { next(e); }
-});
-
-// Get transaction details by ID
-app.get('/api/admin/transactions/:id', auth, guard('ROLE_ADMIN'), async (req, res, next) => {
-  try {
-    const txn = await getTransactionDetails(req.params.id);
-    if (!txn) return fail(res, 404, 'Transaction not found');
-    ok(res, txn, 'Transaction details retrieved');
-  } catch (e) { next(e); }
-});
-
-// Export transactions (admin only)
-app.get('/api/admin/transactions/export/csv', auth, guard('ROLE_ADMIN'), async (req, res, next) => {
-  try {
-    const filters = {
-      status: req.query.status,
-      environment: 'TEST',
-      fromDate: req.query.fromDate,
-      toDate: req.query.toDate
-    };
-
-    const {transactions} = await getTransactionsList({...filters, limit: 10000, offset: 0});
-
-    // Build CSV
-    const headers = ['Transaction ID', 'Student', 'Owner', 'Job', 'Amount', 'Status', 'Environment', 'Payment Method', 'Order ID', 'Payment ID', 'Created Date'];
-    const rows = transactions.map(t => [
-      t.transactionId,
-      t.studentName,
-      t.ownerName,
-      t.jobTitle,
-      `₹${t.amount}`,
-      t.paymentStatus,
-      t.environment,
-      t.paymentMethod || 'N/A',
-      t.razorpayOrderId || '',
-      t.razorpayPaymentId || '',
-      new Date(t.createdAt).toLocaleString('en-IN')
-    ]);
-
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="transactions.csv"');
-    res.send(csv);
-  } catch (e) { next(e); }
-});
-
-// ─── STUDENT TRANSACTIONS ───────────────────────────────────────────────────
-
-// Get student's own transactions
-app.get('/api/student/transactions', auth, guard('ROLE_STUDENT'), async (req, res, next) => {
-  try {
-    const studentProfile = await collection('student_profiles').findOne({user_id: req.user.id}, {projection: {id: 1}});
-    if (!studentProfile) return fail(res, 404, 'Student profile not found');
-
-    const filters = {
-      studentId: studentProfile.id,
-      status: req.query.status,
-      environment: 'TEST',
-      limit: req.query.limit || 20,
-      offset: req.query.offset || 0
-    };
-
-    const result = await getTransactionsList(filters);
-    ok(res, result, 'Student transactions retrieved');
-  } catch (e) { next(e); }
-});
-
-// Get student transaction details
-app.get('/api/student/transactions/:id', auth, guard('ROLE_STUDENT'), async (req, res, next) => {
-  try {
-    const studentProfile = await collection('student_profiles').findOne({user_id: req.user.id}, {projection: {id: 1}});
-    if (!studentProfile) return fail(res, 404, 'Student profile not found');
-
-    const txn = await getTransactionDetails(req.params.id);
-    if (!txn) return fail(res, 404, 'Transaction not found');
-    
-    // Verify student owns this transaction
-    if (txn.studentId !== studentProfile.id) {
-      return fail(res, 403, 'You do not have permission to view this transaction');
-    }
-
-    ok(res, txn, 'Transaction details retrieved');
-  } catch (e) { next(e); }
-});
-
-// ─── OWNER TRANSACTIONS ─────────────────────────────────────────────────────
-
-// Get owner's transactions (from their jobs)
-app.get('/api/owner/transactions', auth, guard('ROLE_OWNER'), async (req, res, next) => {
-  try {
-    const ownerProfile = await collection('owner_profiles').findOne({user_id: req.user.id}, {projection: {id: 1}});
-    if (!ownerProfile) return fail(res, 404, 'Owner profile not found');
-
-    const filters = {
-      ownerId: ownerProfile.id,
-      status: req.query.status,
-      environment: 'TEST',
-      limit: req.query.limit || 20,
-      offset: req.query.offset || 0
-    };
-
-    const result = await getTransactionsList(filters);
-    ok(res, result, 'Owner transactions retrieved');
-  } catch (e) { next(e); }
-});
-
-// Get owner transaction details
-app.get('/api/owner/transactions/:id', auth, guard('ROLE_OWNER'), async (req, res, next) => {
-  try {
-    const ownerProfile = await collection('owner_profiles').findOne({user_id: req.user.id}, {projection: {id: 1}});
-    if (!ownerProfile) return fail(res, 404, 'Owner profile not found');
-
-    const txn = await getTransactionDetails(req.params.id);
-    if (!txn) return fail(res, 404, 'Transaction not found');
-    
-    // Verify owner owns the job in this transaction
-    if (txn.ownerId !== ownerProfile.id) {
-      return fail(res, 403, 'You do not have permission to view this transaction');
-    }
-
-    ok(res, txn, 'Transaction details retrieved');
   } catch (e) { next(e); }
 });
 
@@ -1988,65 +1831,26 @@ async function checkPaymentTiming(applicationId) {
 
 app.use('/uploads', express.static(uploadsDir));
 app.use(express.static(staticDir));
-// Wire up Razorpay routes (some require auth, some don't - handled in routes)
-app.use('/', razorpayRouter);
-// Razorpay webhook needs raw body - mount before JSON parser for this specific route  
-app.post('/api/razorpay/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  try {
-    if (webhookSecret) {
-      const signature = req.headers['x-razorpay-signature'];
-      const body = typeof req.body === 'string' ? req.body : req.body.toString();
-      const expectedSig = crypto.createHmac('sha256', webhookSecret).update(body).digest('hex');
-      if (signature !== expectedSig) return res.status(400).json({message: 'Invalid signature'});
-    }
-    const event = JSON.parse(typeof req.body === 'string' ? req.body : req.body.toString());
-    console.log('[RAZORPAY] Webhook:', event.event);
-    if (event.event === 'payment.captured') {
-      const p = event.payload.payment.entity;
-      const rec = await collection('payment_records').findOne({razorpay_order_id: p.order_id, payment_status: {$ne: 'SUCCESS'}});
-      if (rec) {
-        await transaction(async session => {
-          const now = new Date().toISOString();
-          await collection('payment_records').updateOne(
-            {id: rec.id, payment_status: {$ne: 'SUCCESS'}},
-            {$set: {razorpay_payment_id: p.id || rec.razorpay_payment_id, payment_status: 'SUCCESS', payment_method: p.method, confirmed_paid_at: now, updated_at: now}},
-            {session}
-          );
-          await collection('job_applications').updateOne(
-            {id: rec.application_id, payment_status: {$ne: 'SUCCESS'}},
-            {$set: {payment_status: 'SUCCESS', payment_confirmation_date: now, updated_at: now}}, {session}
-          );
-        });
-      }
-    } else if (event.event === 'payment.failed') {
-      const p = event.payload.payment.entity;
-      const failReason = p.error_description || p.error_reason || null;
-      await collection('payment_records').updateOne(
-        {razorpay_order_id: p.order_id, payment_status: 'CREATED'},
-        {$set: {payment_status: 'FAILED', failure_reason: failReason, updated_at: new Date().toISOString()}}
-      );
-    } else if (event.event === 'refund.created' || event.event === 'refund.processed') {
-      const r = event.payload.refund.entity;
-      if (r.payment_id) {
-        await collection('payment_records').updateOne(
-          {razorpay_payment_id: r.payment_id, payment_status: {$in: ['SUCCESS', 'CONFIRMED']}},
-          {$set: {payment_status: 'REFUNDED', updated_at: new Date().toISOString()}}
-        );
-        console.log('[RAZORPAY] Webhook: refund processed for payment', r.payment_id);
-      }
-    }
-    res.json({status: 'ok'});
-  } catch (e) { console.error('[RAZORPAY] Webhook error:', e.message); res.json({status: 'ok'}); }
-});
 app.get('*', (req, res) => res.sendFile(path.join(staticDir, 'index.html')));
-app.use((e, req, res, next) => { console.error(e); fail(res, e.status || 500, e.status ? e.message : 'Internal server error'); });
+app.use((e, req, res, next) => {
+  const status = e.status || (e.code === 11000 ? 409 :
+    e.name === 'ValidationError' || e.name === 'CastError' ? 400 :
+    e.name === 'MongoServerSelectionError' || e.name === 'MongooseServerSelectionError' ? 503 : 500);
+  const safeMessage = String(e.message || '').replace(/mongodb(?:\+srv)?:\/\/\S+/gi, '[database URI redacted]');
+  console.error(`[API] ${e.name || 'Error'}: ${safeMessage}`);
+  fail(res, status, status < 500 ? safeMessage : 'Internal server error');
+});
 
 // ─── START ───────────────────────────────────────────────────────────────────
 
 if (require.main === module) {
+  if (!SECRET) {
+    console.error('JWT_SECRET is required. Set it in the local .env file.');
+    process.exitCode = 1;
+  } else {
   initializeDatabase().then(() => app.listen(PORT, '0.0.0.0', () => console.log(`PartTime Job Platform listening on http://0.0.0.0:${PORT}`)))
-    .catch(e => { console.error('Database initialization failed:', e.message); process.exitCode = 1; });
+    .catch(e => { console.error(`Application initialization failed (${e.name || 'Error'}). Check MONGO_URI and database availability.`); process.exitCode = 1; });
+  }
 }
 
 module.exports = app;
