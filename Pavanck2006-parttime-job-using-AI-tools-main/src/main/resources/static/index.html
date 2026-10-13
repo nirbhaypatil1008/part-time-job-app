@@ -12,6 +12,7 @@
 
   <!-- Custom Modern Design System -->
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/glassmorphism.css?v=10">
 
   <!-- Google Translate -->
   <script>
@@ -30,9 +31,10 @@
       }, 'google_translate_element_auth');
     }
   </script>
-  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
   <style>
-    .goog-te-banner-frame { display: none !important; }
+    .goog-te-banner-frame,
+    iframe.VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; visibility: hidden !important; }
     body { top: 0 !important; }
     /* Hide default Google Translate widget, we use our own */
     #google_translate_element, #google_translate_element_auth { position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
@@ -50,7 +52,7 @@
     .lang-dropdown {
       display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 9999;
       background: var(--light-surface, #fff); border: 1px solid var(--light-border, #e2e8f0);
-      border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      border-radius: 12px; box-shadow: 0 10px 30px rgba(235, 229, 229, 0.12);
       width: 260px; max-height: 380px; overflow: hidden;
     }
     .lang-dropdown.open { display: block; }
@@ -63,12 +65,12 @@
       display: flex; align-items: center; gap: 10px;
       padding: 8px 14px; cursor: pointer; font-size: 13px; transition: background 0.15s;
     }
-    .lang-option:hover { background: var(--primary-light, #eef2ff); }
-    .lang-option.active { background: var(--primary-light, #eef2ff); color: var(--primary, #4f46e5); font-weight: 600; }
+    .lang-option:hover { background: var(--primary-light, #010101); }
+    .lang-option.active { background: var(--primary-light, #0a0a0c); color: var(--primary, #4f46e5); font-weight: 600; }
     .lang-flag { font-size: 18px; line-height: 1; }
     .lang-name { flex: 1; }
     .lang-name small { display: block; font-size: 11px; color: var(--text-muted, #64748b); font-weight: 400; }
-    .lang-option.active .lang-name small { color: var(--primary, #4f46e5); }
+    .lang-option.active .lang-name small { color: var(--primary, #797979); }
   </style>
   <script>
     const LANGUAGES = [
@@ -144,19 +146,8 @@
     function selectLanguage(code, selector) {
       currentLang = code;
       localStorage.setItem('ptj_lang', code);
-      // Trigger Google Translate
-      var gtSelect = document.querySelector('#google_translate_element select');
-      if (gtSelect) {
-        gtSelect.value = code;
-        gtSelect.dispatchEvent(new Event('change'));
-      }
-      // Rebuild all selectors
-      document.querySelectorAll('.lang-selector').forEach(s => {
-        var id = s.parentElement?.id;
-        if (id) createLangSelector(id);
-      });
-      // Close dropdown
-      document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
+      document.cookie = 'googtrans=/en/' + code + ';path=/;max-age=31536000;SameSite=Lax';
+      window.location.reload();
     }
 
     function toggleLangDropdown(btn) {
@@ -165,6 +156,22 @@
       document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
       if (!wasOpen) {
         dd.classList.add('open');
+        if (window.matchMedia('(max-width: 991.98px)').matches) {
+          var selectorRect = btn.closest('.lang-selector').getBoundingClientRect();
+          var buttonRect = btn.getBoundingClientRect();
+          var dropdownWidth = Math.min(260, window.innerWidth - 24);
+          var dropdownLeft = Math.max(12, Math.min(
+            buttonRect.right - dropdownWidth,
+            window.innerWidth - dropdownWidth - 12
+          ));
+          dd.style.width = dropdownWidth + 'px';
+          dd.style.left = (dropdownLeft - selectorRect.left) + 'px';
+          dd.style.right = 'auto';
+        } else {
+          dd.style.width = '';
+          dd.style.left = '';
+          dd.style.right = '';
+        }
         dd.querySelector('.lang-search').value = '';
         dd.querySelector('.lang-search').focus();
         renderLangList(dd.querySelector('.lang-list')?.id);
@@ -185,6 +192,9 @@
   </script>
 </head>
 <body>
+
+  <div id="google_translate_element"></div>
+  <div id="google_translate_element_auth"></div>
 
   <!-- ========================================================================= -->
   <!-- NAVBAR -->
@@ -871,7 +881,7 @@
 
         <!-- 5. Payments -->
         <div class="tab-pane fade" id="st-tab-payments">
-          <div class="custom-table table-responsive">
+          <div class="custom-table table-responsive" tabindex="0" role="region" aria-label="Payment history table. Scroll horizontally to see all columns.">
             <table class="table align-middle mb-0">
               <thead>
                 <tr>
@@ -1365,7 +1375,7 @@
             <button class="btn btn-sm btn-outline-success" id="owPayFilterPaid" onclick="Owner.filterPayments('PAID')">Paid</button>
           </div>
 
-          <div class="custom-table table-responsive">
+          <div class="custom-table table-responsive" tabindex="0" role="region" aria-label="Payment records table. Scroll horizontally to see all columns.">
             <table class="table align-middle mb-0">
               <thead>
                 <tr>
